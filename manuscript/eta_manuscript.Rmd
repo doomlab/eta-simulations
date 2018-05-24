@@ -45,9 +45,27 @@ output            : papaja::apa6_pdf
 library("papaja")
 ```
 
+effect size
+- what is effect size
+- why should we care about it
+- what are the types of effect sizes
 
+limitations
+- known problems with effect size (bias)
+- variance and meta-analyses rely on these things but we don't know squat about how these work
 
-# Methods
+# Method
+
+## Simulations
+talk about all the variables and stuff here
+formulas
+manipulated variables = 
+- sample size
+- design type
+- effect size type
+- effect size size
+- correlation
+- levels
 
 ```{r simulation-code, eval=FALSE, include=FALSE}
 ####simulations for data####
@@ -1509,14 +1527,16 @@ round(tapply(CItest$LLZ.pes.RM1, list(CItest$N, CItest$stdev), mean),3)
 round(tapply(CItest$ULpes.RM1, list(CItest$N, CItest$stdev), mean),3) - round(tapply(CItest$ULZ.pes.RM1, list(CItest$N, CItest$stdev), mean),3)
 ```
 
-
-## Participants
-
-## Material
-
-## Procedure
-
 # Results
+
+## Distribution Estimation
+- talk about the distributions here
+
+## Sampling Variance
+- john! do the thing here where you talk about the meta stuff you did i have zero clue about it. 
+
+## Confidence Intervals
+- I will talk here about how to create confidence intervals what we tested against and why we should use this MOTE/MBESS estimator. 
 
 # Discussion
 
