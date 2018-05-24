@@ -1,0 +1,1529 @@
+---
+title             : "The title"
+shorttitle        : "Title"
+
+author: 
+  - name          : "First Author"
+    affiliation   : "1"
+    corresponding : yes    # Define only one corresponding author
+    address       : "Postal address"
+    email         : "my@email.com"
+  - name          : "Ernst-August Doelle"
+    affiliation   : "1,2"
+
+affiliation:
+  - id            : "1"
+    institution   : "Wilhelm-Wundt-University"
+  - id            : "2"
+    institution   : "Konstanz Business School"
+
+author_note: |
+  Add complete departmental affiliations for each author here. Each new line herein must be indented, like this line.
+
+  Enter author note here.
+
+abstract: |
+  Enter abstract here. Each new line herein must be indented, like this line.
+  
+keywords          : "keywords"
+wordcount         : "X"
+
+bibliography      : ["r-references.bib"]
+
+figsintext        : no
+figurelist        : no
+tablelist         : no
+footnotelist      : no
+lineno            : yes
+
+lang              : "english"
+class             : "man"
+output            : papaja::apa6_pdf
+---
+
+```{r load_packages, include = FALSE}
+library("papaja")
+```
+
+
+
+# Methods
+
+```{r simulation-code, eval=FALSE, include=FALSE}
+####simulations for data####
+library(mvtnorm)
+library(ez)
+library(reshape)
+##rmvnorm(n, mean = rep(0, nrow(sigma)), sigma = diag(length(mean)),
+##        method=c("eigen", "svd", "chol"), pre0.9_9994 = FALSE)
+
+####things to simulate####
+##rotate around N values start at 20 in each level, then add 5 as you go
+##keep means steady 2.5, 3, 3.5, etc.
+##rotate around the number of levels 3-6
+##rotate around SDs making eta small medium large
+##rotate around correlated error 0, .1, 3., .5, .7, .9
+
+####create blank data from for data####
+totalsims = 1224*1000
+mydata = data.frame(N = 1:totalsims)
+
+####keep track of the simulation rounds####
+round = 0
+
+####loop over N values here####
+##loop a
+Nloops = seq(20, 100, 6)
+for (a in 1:length(Nloops)) {
+  
+simulate = 0
+
+####loop over M and levels values here####
+##this loop will give you different numbers of means for the different number of levels
+##loops b
+levels = 3:6 
+
+for (b in 1:length(levels)) {
+
+topmean = c(3.5, 4.0, 4.5, 5)  
+Means = seq(2.5, topmean[b], .5)
+
+
+####loop over SD values here####
+##loop c
+SDloops = c(5, 3, 1)
+
+for (c in 1:length(SDloops)) {
+
+####loop over correlations here####
+##loop d
+corloops = c(0, .1, .3, .5, .7, .9)
+
+for (d in 1:length(corloops)) {
+
+####simulate 1000 rounds of data####
+
+for (e in 1:1000) {
+      ####make the data here####
+      ##here we are going to want to make the cor / SD matrix pattern
+      ##but that will depends on the number of levels 
+      ##might have to do it by if statements? not very elegant
+
+      if(levels[b] == 3) {
+      sigma = matrix(c(SDloops[c],corloops[d],corloops[d],
+                       corloops[d],SDloops[c],corloops[d],
+                       corloops[d],corloops[d],SDloops[c]), nrow = 3, ncol = 3)
+      }
+
+      if(levels[b] == 4) {
+      sigma = matrix(c(SDloops[c],corloops[d],corloops[d],corloops[d],
+                   corloops[d],SDloops[c],corloops[d],corloops[d],
+                   corloops[d],corloops[d],SDloops[c],corloops[d],
+                   corloops[d],corloops[d],corloops[d],SDloops[c]), nrow = 4, ncol = 4)
+      }
+
+      if(levels[b] == 5) {
+      sigma = matrix(c(SDloops[c],corloops[d],corloops[d],corloops[d],corloops[d],
+                   corloops[d],SDloops[c],corloops[d],corloops[d],corloops[d],
+                   corloops[d],corloops[d],SDloops[c],corloops[d],corloops[d],
+                   corloops[d],corloops[d],corloops[d],SDloops[c],corloops[d],
+                   corloops[d],corloops[d],corloops[d],corloops[d],SDloops[c]), nrow = 5, ncol = 5)
+      }
+
+      if(levels[b] == 6) {
+      sigma = matrix(c(SDloops[c],corloops[d],corloops[d],corloops[d],corloops[d],corloops[d],
+                   corloops[d],SDloops[c],corloops[d],corloops[d],corloops[d],corloops[d],
+                   corloops[d],corloops[d],SDloops[c],corloops[d],corloops[d],corloops[d],
+                   corloops[d],corloops[d],corloops[d],SDloops[c],corloops[d],corloops[d],
+                   corloops[d],corloops[d],corloops[d],corloops[d],SDloops[c],corloops[d],
+                   corloops[d],corloops[d],corloops[d],corloops[d],corloops[d],SDloops[c]), nrow = 6, ncol = 6)
+      }
+    
+      dataset = rmvnorm(Nloops[a], Means, sigma)
+      
+      ##here we are simulating 1-7 Likert type data
+      ##take off the digits
+      ##take out the out of range values
+      dataset = round(dataset, digits = 0)
+      dataset[ dataset < 1 ] = 1
+      dataset[ dataset > 7 ] = 7
+      
+      ####put in the basic statistics here####
+      round = round + 1
+      simulate = simulate + 1
+      mydata$N[round] = Nloops[a]
+      mydata$levels[round] = levels[b]
+      mydata$stdev[round] = SDloops[c]
+      mydata$correl[round] = corloops[d]
+      mydata$simnum[round] = simulate
+    
+      ####begin RM ANOVA one way####
+      dataset = as.data.frame(dataset)
+      dataset$partno = as.factor(1:nrow(dataset))
+      longdataset = melt(dataset,
+                         id = "partno",
+                         measured = colnames(longdataset[1:(ncol(longdataset)-1), ]))
+      
+      rmoutput = ezANOVA(data = longdataset,
+                         wid = partno,
+                         within = variable,
+                         dv = value,
+                         type = 3, 
+                         detailed = T)
+      
+      mydata$RM1.dfm[round] = rmoutput$ANOVA$DFn[2]
+      mydata$RM1.dfr[round] = rmoutput$ANOVA$DFd[2]
+      mydata$RM1.ssm.p[round] = rmoutput$ANOVA$SSn[1]
+      mydata$RM1.ssm.main[round] = rmoutput$ANOVA$SSn[2]
+      mydata$RM1.ssr.p[round] = rmoutput$ANOVA$SSd[1]
+      mydata$RM1.ssr.main[round] = rmoutput$ANOVA$SSd[2]
+      mydata$RM1.F[round] = rmoutput$ANOVA$F[2]
+      mydata$RM1.ges[round] = rmoutput$ANOVA$ges[2]
+            
+      ####begin RM ANOVA two way####
+      tempstuff = longdataset
+      randomvalues = rnorm(Nloops[a], mean(Means), 1)
+      tempstuff$value = tempstuff$value + randomvalues
+      
+      tempstuff$value = round(tempstuff$value, digits = 0)
+      tempstuff$value[  tempstuff$value < 1 ] = 1
+      tempstuff$value[  tempstuff$value > 7 ] = 7
+      
+      doublermdata = rbind(longdataset, tempstuff)
+      
+      level1 = as.numeric(gl(2, Nloops[a]/2, nrow(longdataset), labels = c("1", "2")))
+      level2 = 3 - as.numeric(gl(2, Nloops[a]/2, nrow(longdataset), labels = c("2", "1")))
+      
+      doublermdata$rmlevel2 = as.factor(c(level1,level2))
+      
+      rmoutput2 = ezANOVA(data = doublermdata,
+                            wid = partno,
+                            within = .(variable, rmlevel2),
+                            dv = value,
+                            type = 3,
+                            detailed = T)
+      
+      mydata$RM2.dfm[round] = rmoutput2$ANOVA$DFn[2]
+      mydata$RM2.dfr[round] = rmoutput2$ANOVA$DFd[2]
+      mydata$RM2.ssm.p[round] = rmoutput2$ANOVA$SSn[1]
+      mydata$RM2.ssm.main[round] = rmoutput2$ANOVA$SSn[2]
+      mydata$RM2.ssm.other[round] = rmoutput2$ANOVA$SSn[3]
+      mydata$RM2.ssm.interact[round] = rmoutput2$ANOVA$SSn[4]
+      mydata$RM2.ssr.p[round] = rmoutput2$ANOVA$SSd[1]
+      mydata$RM2.ssr.main[round] = rmoutput2$ANOVA$SSd[2]
+      mydata$RM2.ssr.other[round] = rmoutput2$ANOVA$SSd[3]
+      mydata$RM2.ssr.interact[round] = rmoutput2$ANOVA$SSd[4]
+      mydata$RM2.F[round] = rmoutput2$ANOVA$F[2]
+      mydata$RM2.ges[round] = rmoutput2$ANOVA$ges[2]
+      
+      ####begin MIXED ANOVA two way####
+      longdataset$level2 = gl(2, Nloops[a]/2, nrow(longdataset), labels = c("level 1", "level 2"))
+      
+      mixedoutput = ezANOVA(data = longdataset,
+                          wid = partno,
+                          within = variable,
+                          between = level2,
+                          dv = value,
+                          type = 3,
+                          detailed = T)
+      
+      mydata$MIX.dfm[round] = mixedoutput$ANOVA$DFn[3]
+      mydata$MIX.dfr[round] = mixedoutput$ANOVA$DFd[3]
+      mydata$MIX.ssm.p[round] = mixedoutput$ANOVA$SSn[1]
+      mydata$MIX.ssm.other[round] = mixedoutput$ANOVA$SSn[2]
+      mydata$MIX.ssm.main[round] = mixedoutput$ANOVA$SSn[3]
+      mydata$MIX.ssm.interact[round] = mixedoutput$ANOVA$SSn[4]
+      mydata$MIX.ssr.p[round] = mixedoutput$ANOVA$SSd[1]
+      mydata$MIX.ssr.other[round] = mixedoutput$ANOVA$SSd[2]
+      mydata$MIX.ssr.main[round] = mixedoutput$ANOVA$SSd[3]
+      mydata$MIX.ssr.interact[round] = mixedoutput$ANOVA$SSd[4]
+      mydata$MIX.F[round] = mixedoutput$ANOVA$F[3]
+      mydata$MIX.ges[round] = mixedoutput$ANOVA$ges[3]
+      
+      ####begin BN ANOVA one way####
+      longdataset$bnpartno = as.factor(1:nrow(longdataset))
+      bnoutput = ezANOVA(data = longdataset,
+                         wid = bnpartno,
+                         between = variable,
+                         dv = value, 
+                         type = 3, 
+                         detailed = T)
+      
+      mydata$BN1.dfm[round] = bnoutput$ANOVA$DFn[2]
+      mydata$BN1.dfr[round] = bnoutput$ANOVA$DFd[2]
+      mydata$BN1.ssm.p[round] = bnoutput$ANOVA$SSn[1]
+      mydata$BN1.ssm.main[round] = bnoutput$ANOVA$SSn[2]
+      mydata$BN1.ssr.p[round] = bnoutput$ANOVA$SSd[1]
+      mydata$BN1.ssr.main[round] = bnoutput$ANOVA$SSd[2]
+      mydata$BN1.F[round] = bnoutput$ANOVA$F[2]
+      mydata$BN1.ges[round] = bnoutput$ANOVA$ges[2]
+       
+      ####begin BN ANOVA two way####
+      bnoutput2 = ezANOVA(data = longdataset,
+                            wid = bnpartno,
+                            between = .(variable, level2),
+                            dv = value,
+                            type = 3,
+                            detailed = T)
+
+      mydata$BN2.dfm[round] = bnoutput2$ANOVA$DFn[2]
+      mydata$BN2.dfr[round] = bnoutput2$ANOVA$DFd[2]
+      mydata$BN2.ssm.p[round] = bnoutput2$ANOVA$SSn[1]
+      mydata$BN2.ssm.main[round] = bnoutput2$ANOVA$SSn[2]
+      mydata$BN2.ssm.other[round] = bnoutput2$ANOVA$SSn[3]
+      mydata$BN2.ssm.interact[round] = bnoutput2$ANOVA$SSn[4]
+      mydata$BN2.ssr.all[round] = bnoutput2$ANOVA$SSd[1]
+      mydata$BN2.F[round] = bnoutput2$ANOVA$F[2]
+      mydata$BN2.ges[round] = bnoutput2$ANOVA$ges[2]
+      
+} ##end sim loop
+
+  
+  filename = paste(round, ".csv", sep = "")
+  datalines = (abs(round-999):round)
+  write.csv(mydata[ datalines, ], file = filename)
+  
+      
+} ##end N loop
+
+} ##end levels loop
+
+} ##end SD loop
+
+} ##end cor loop
+
+```
+
+```{r data-setup, include = FALSE}
+
+fulldata = read.csv("fulldata.csv")
+
+#calculate partial eta squared
+fulldata$RM1.pes = fulldata$RM1.ssm.main / (fulldata$RM1.ssm.main + fulldata$RM1.ssr.main)
+fulldata$RM2.pes = fulldata$RM2.ssm.main / (fulldata$RM2.ssm.main + fulldata$RM2.ssr.main)
+fulldata$MIX.pes = fulldata$MIX.ssm.main / (fulldata$MIX.ssm.main + fulldata$MIX.ssr.main)
+fulldata$BN1.pes = fulldata$BN1.ssm.main / (fulldata$BN1.ssm.main + fulldata$BN1.ssr.main)
+fulldata$BN2.pes = fulldata$BN2.ssm.main / (fulldata$BN2.ssm.main + fulldata$BN2.ssr.all)
+
+#calculate full eta squared
+fulldata$RM1.fes = fulldata$RM1.ssm.main / (fulldata$RM1.ssm.main + fulldata$RM1.ssr.main + fulldata$RM1.ssr.p)
+fulldata$RM2.fes = fulldata$RM2.ssm.main / 
+  (fulldata$RM2.ssm.main + fulldata$RM2.ssr.main + fulldata$RM2.ssm.other + fulldata$RM2.ssm.interact + fulldata$RM2.ssr.p + fulldata$RM2.ssr.other + fulldata$RM2.ssr.interact)
+fulldata$MIX.fes = fulldata$MIX.ssm.main / 
+  (fulldata$MIX.ssm.main + fulldata$MIX.ssr.main + fulldata$MIX.ssm.other + fulldata$MIX.ssm.interact + fulldata$MIX.ssr.p + fulldata$MIX.ssr.other + fulldata$MIX.ssr.interact)
+fulldata$BN1.fes = fulldata$BN1.ssm.main / (fulldata$BN1.ssm.main + fulldata$BN1.ssr.main)
+fulldata$BN2.fes = fulldata$BN2.ssm.main / (fulldata$BN2.ssm.main + fulldata$BN2.ssr.all + fulldata$BN2.ssm.other + fulldata$BN2.ssm.interact)
+
+#calculate full omega squared
+fulldata$RM1.fos = (fulldata$RM1.dfm*((fulldata$RM1.ssm.main/fulldata$RM1.dfm)-(fulldata$RM1.ssr.main/fulldata$RM1.dfr)))/
+  ((fulldata$RM1.ssm.main+fulldata$RM1.ssr.main+fulldata$RM1.ssr.p)+(fulldata$RM1.ssm.p/(fulldata$RM1.dfr/fulldata$RM1.dfm)))
+fulldata$RM2.fos = (fulldata$RM2.dfm*((fulldata$RM2.ssm.main/fulldata$RM2.dfm)-(fulldata$RM2.ssr.main/fulldata$RM2.dfr)))/
+  ((fulldata$RM2.ssm.main+fulldata$RM2.ssr.main+fulldata$RM2.ssm.other+fulldata$RM2.ssr.other+fulldata$RM2.ssm.interact+fulldata$RM2.ssr.interact+fulldata$RM2.ssr.p)+(fulldata$RM2.ssm.p/(fulldata$RM2.dfr/fulldata$RM2.dfm)))
+fulldata$MIX.fos = (fulldata$MIX.dfm*((fulldata$MIX.ssm.main/fulldata$MIX.dfm)-(fulldata$MIX.ssr.main/fulldata$MIX.dfr)))/
+  (fulldata$MIX.ssm.main+fulldata$MIX.ssr.main+fulldata$MIX.ssr.p+(fulldata$MIX.ssr.main/(fulldata$MIX.dfr/fulldata$MIX.dfm)))
+fulldata$BN1.fos = (fulldata$BN1.dfm*((fulldata$BN1.ssm.main/fulldata$BN1.dfm)-(fulldata$BN1.ssr.main/fulldata$BN1.dfr)))/
+  ((fulldata$BN1.ssm.main + fulldata$BN1.ssr.main)+(fulldata$BN1.ssr.main/fulldata$BN1.dfr))
+fulldata$BN2.fos = (fulldata$BN2.dfm*((fulldata$BN2.ssm.main/fulldata$BN2.dfm)-(fulldata$BN2.ssr.all/fulldata$BN2.dfr)))/
+  ((fulldata$BN2.ssm.main + fulldata$BN2.ssr.all + fulldata$BN2.ssm.other + fulldata$BN2.ssm.interact)+(fulldata$BN2.ssr.all/fulldata$BN2.dfr))
+
+#calculate partial omega squared
+#RM1 NA
+#BN1 NA
+fulldata$RM2.pos = (fulldata$RM2.dfm*((fulldata$RM2.ssm.main/fulldata$RM2.dfm)-(fulldata$RM2.ssr.main/fulldata$RM2.dfr)))/
+  (fulldata$RM2.ssm.main+fulldata$RM2.ssr.main+fulldata$RM2.ssr.p+(fulldata$RM2.ssr.p/(fulldata$RM2.dfr/fulldata$RM2.dfm)))
+fulldata$BN2.pos = (fulldata$BN2.dfm*((fulldata$BN2.ssm.main/fulldata$BN2.dfm)-(fulldata$BN2.ssr.all/fulldata$BN2.dfr)))/
+  (fulldata$BN2.ssm.main+(((fulldata$N*fulldata$levels)-fulldata$BN2.dfm)*(fulldata$BN2.ssr.all/fulldata$BN2.dfr)))
+fulldata$MIX.pos = (fulldata$MIX.dfm*((fulldata$MIX.ssm.main/fulldata$MIX.dfm)-(fulldata$MIX.ssr.main/fulldata$MIX.dfr)))/
+  (fulldata$MIX.ssm.main+fulldata$MIX.ssr.main+fulldata$MIX.ssr.p+(fulldata$MIX.ssr.p/(fulldata$MIX.dfr/fulldata$MIX.dfm)))
+
+####look at values to see how they compare####
+names(fulldata)
+justes = fulldata[ , c(15, 27, 39, 47, 56:74)]
+cor(justes[ , 1:5]) ##rm1, mix, bn1, bn2 versus rm2 GES 
+cor(justes[ , 6:10]) ##rm1, rm2, mix versus bn1/bn2 PES
+cor(justes[ , 11:15]) ##rm1, mix, bn1, bn2 versus rm2 FES
+cor(justes[ , 16:20]) ##rm1, mix, bn1, bn2 versus rm2 FOS
+cor(justes[ , 21:23]) ##all perfectly correlated, use RM2 POS
+
+options(scipen = 999)
+
+fulldata$popeta = NA
+fulldata$popeta[ fulldata$levels == 3 & fulldata$stdev == 5] = 0.03225806
+fulldata$popeta[ fulldata$levels == 3 & fulldata$stdev == 3] = 0.05263158
+fulldata$popeta[ fulldata$levels == 3 & fulldata$stdev == 1] = 0.14285714
+fulldata$popeta[ fulldata$levels == 4 & fulldata$stdev == 5] = 0.05882353
+fulldata$popeta[ fulldata$levels == 4 & fulldata$stdev == 3] = 0.09433962
+fulldata$popeta[ fulldata$levels == 4 & fulldata$stdev == 1] = 0.23809524
+fulldata$popeta[ fulldata$levels == 5 & fulldata$stdev == 5] = 0.09090909
+fulldata$popeta[ fulldata$levels == 5 & fulldata$stdev == 3] = 0.14285714
+fulldata$popeta[ fulldata$levels == 5 & fulldata$stdev == 1] = 0.33333333
+fulldata$popeta[ fulldata$levels == 6 & fulldata$stdev == 5] = 0.12727270
+fulldata$popeta[ fulldata$levels == 6 & fulldata$stdev == 3] = 0.19553070
+fulldata$popeta[ fulldata$levels == 6 & fulldata$stdev == 1] = 0.42168670
+
+fulldata$ncp = fulldata$popeta / ((1-fulldata$popeta)*(fulldata$N * fulldata$levels))
+
+```
+
+```{r graphs}
+
+library(ggplot2)
+
+cleanup = theme(panel.grid.major = element_blank(), 
+                panel.grid.minor = element_blank(), 
+                panel.background = element_blank(), 
+                axis.line.x = element_line(color = "black"),
+                axis.line.y = element_line(color = "black"),
+                legend.key = element_rect(fill = "white"),
+                text = element_text(size = 14))
+
+##use all RM2
+#N = 110
+#correl = 0
+#across all levels with color
+
+smalldata = subset(fulldata, stdev == 5 & correl == 0 & N == 110)
+meddata = subset(fulldata, stdev == 3 & correl == 0 & N == 110)
+largedata = subset(fulldata, stdev == 1 & correl == 0 & N == 110)
+
+smalldata$levels = as.factor(smalldata$levels)
+meddata$levels = as.factor(meddata$levels)
+largedata$levels = as.factor(largedata$levels)
+
+####make small effect size histograms####
+histGESsmall = ggplot(smalldata, aes(RM2.ges, fill = levels)) + 
+  geom_histogram(binwidth = .005) +
+  cleanup + 
+  ggtitle("Small Effects") + 
+  ylab("Generalized Effect Size") +
+  xlab(" ") +
+  scale_fill_manual(name = "Levels", 
+                    values = c("#450000", "#0e1a40", "#1d1485", "#52506b")) + 
+  coord_cartesian(xlim = c(0,.30), ylim = c(0,400))
+ 
+histFESsmall = ggplot(smalldata, aes(RM2.fes, fill = levels)) + 
+  geom_histogram(binwidth = .005) +
+  cleanup + 
+  xlab("Full Eta Squared") + 
+  ylab("Frequency") +
+  scale_fill_manual(name = "Levels", 
+                    values = c("#450000", "#0e1a40", "#1d1485", "#52506b"))
+
+histPOSsmall = ggplot(smalldata, aes(RM2.pos, fill = levels)) + 
+  geom_histogram(binwidth = .005) +
+  cleanup + 
+  xlab(" ") + 
+  ylab("Partial Omega Squared") +
+  scale_fill_manual(name = "Levels", 
+                    values = c("#450000", "#0e1a40", "#1d1485", "#52506b")) +
+  coord_cartesian(xlim = c(0,.30), ylim = c(0,200))
+
+histFOSsmall = ggplot(smalldata, aes(RM2.fos, fill = levels)) + 
+  geom_histogram(binwidth = .005) +
+  cleanup + 
+  xlab("Full Omega Squared") + 
+  ylab("Frequency") +
+  scale_fill_manual(name = "Levels", 
+                    values = c("#450000", "#0e1a40", "#1d1485", "#52506b"))
+
+histPESsmall = ggplot(smalldata, aes(RM2.pes, fill = levels)) + 
+  geom_histogram(binwidth = .005) +
+  cleanup + 
+  xlab(" ") + 
+  ylab("Partial Eta Squared") +
+  scale_fill_manual(name = "Levels", 
+                    values = c("#450000", "#0e1a40", "#1d1485", "#52506b")) + 
+  coord_cartesian(xlim = c(0,.30), ylim = c(0,200))
+
+####make medium size histograms####
+histGESmed = ggplot(meddata, aes(RM2.ges, fill = levels)) + 
+  geom_histogram(binwidth = .005) +
+  cleanup + 
+  ggtitle("Medium Effects") + 
+  ylab(" ") +
+  xlab(" ") +
+  scale_fill_manual(name = "Levels", 
+                    values = c("#450000", "#0e1a40", "#1d1485", "#52506b")) +
+  coord_cartesian(xlim = c(0,.35), ylim = c(0,400))
+
+histFESmed = ggplot(meddata, aes(RM2.fes, fill = levels)) + 
+  geom_histogram(binwidth = .005) +
+  cleanup + 
+  xlab("Full Eta Squared") + 
+  ylab("Frequency") +
+  scale_fill_manual(name = "Levels", 
+                    values = c("#450000", "#0e1a40", "#1d1485", "#52506b"))
+
+histPOSmed = ggplot(meddata, aes(RM2.pos, fill = levels)) + 
+  geom_histogram(binwidth = .005) +
+  cleanup + 
+  xlab(" ") + 
+  ylab(" ") +
+  scale_fill_manual(name = "Levels", 
+                    values = c("#450000", "#0e1a40", "#1d1485", "#52506b")) +
+  coord_cartesian(xlim = c(0,.35), ylim = c(0,200))
+
+histFOSmed = ggplot(meddata, aes(RM2.fos, fill = levels)) + 
+  geom_histogram(binwidth = .005) +
+  cleanup + 
+  xlab("Full Omega Squared") + 
+  ylab("Frequency") +
+  scale_fill_manual(name = "Levels", 
+                    values = c("#450000", "#0e1a40", "#1d1485", "#52506b"))
+
+histPESmed = ggplot(meddata, aes(RM2.pes, fill = levels)) + 
+  geom_histogram(binwidth = .005) +
+  cleanup + 
+  xlab(" ") + 
+  ylab(" ") +
+  scale_fill_manual(name = "Levels", 
+                    values = c("#450000", "#0e1a40", "#1d1485", "#52506b")) +
+  coord_cartesian(xlim = c(0,.35), ylim = c(0,200))
+
+####make large effect histograms####
+histGESlarge = ggplot(largedata, aes(RM2.ges, fill = levels)) + 
+  geom_histogram(binwidth = .005) +
+  cleanup + 
+  ggtitle("Large Effects") + 
+  ylab(" ") +
+  xlab(" ") + 
+  scale_fill_manual(name = "Levels", 
+                    values = c("#450000", "#0e1a40", "#1d1485", "#52506b")) +
+  coord_cartesian(xlim = c(0,.55), ylim = c(0,400)) 
+
+histFESlarge = ggplot(largedata, aes(RM2.fes, fill = levels)) + 
+  geom_histogram(binwidth = .005) +
+  cleanup + 
+  xlab("Full Eta Squared") + 
+  ylab("Frequency") +
+  scale_fill_manual(name = "Levels", 
+                    values = c("#450000", "#0e1a40", "#1d1485", "#52506b"))
+
+histPOSlarge = ggplot(largedata, aes(RM2.pos, fill = levels)) + 
+  geom_histogram(binwidth = .005) +
+  cleanup + 
+  xlab(" ") + 
+  ylab(" ") +
+  scale_fill_manual(name = "Levels", 
+                    values = c("#450000", "#0e1a40", "#1d1485", "#52506b")) +
+  coord_cartesian(xlim = c(0,.55), ylim = c(0,200))
+
+histFOSlarge = ggplot(largedata, aes(RM2.fos, fill = levels)) + 
+  geom_histogram(binwidth = .005) +
+  cleanup + 
+  xlab("Full Omega Squared") + 
+  ylab("Frequency") +
+  scale_fill_manual(name = "Levels", 
+                    values = c("#450000", "#0e1a40", "#1d1485", "#52506b"))
+
+histPESlarge = ggplot(largedata, aes(RM2.pes, fill = levels)) + 
+  geom_histogram(binwidth = .005) +
+  cleanup + 
+  xlab(" ") + 
+  ylab(" ") +
+  scale_fill_manual(name = "Levels", 
+                    values = c("#450000", "#0e1a40", "#1d1485", "#52506b")) +
+  coord_cartesian(xlim = c(0,.55), ylim = c(0,200))
+
+library(cowplot)
+legend = get_legend(histGESsmall)
+
+ninesquare <- plot_grid( histGESsmall + theme(legend.position="none"),
+                   histGESmed + theme(legend.position="none"),
+                   histGESlarge + theme(legend.position="none"),
+                   histPESsmall + theme(legend.position="none"),
+                   histPESmed + theme(legend.position="none"),
+                   histPESlarge + theme(legend.position="none"),
+                   histPOSsmall + theme(legend.position="none"),
+                   histPOSmed + theme(legend.position="none"),
+                   histPOSlarge + theme(legend.position="none"),
+                   hjust = -1,
+                   nrow = 3)
+
+tiff(filename = "ninesquare.tiff", res = 300, width = 8, 
+     height = 8, units = 'in', compression = "lzw")
+plot(ninesquare)
+dev.off()
+
+```
+
+```{r distribution-estimation, eval=FALSE, include=FALSE}
+
+####ges rm1 versus rm2####
+library(fitdistrplus)
+round = 0
+distributiondata = data.frame(N = 1:1152)
+
+##loop a over N
+Nloops = seq(20, 110, 6)
+for (a in 1:length(Nloops)) {
+  ##loops b over levels
+  levelloop = 3:6 
+  for (b in 1:length(levelloop)) {
+    ##loop c over effect size
+    SDloops = c(5, 3, 1)
+    for (c in 1:length(SDloops)) {
+    ##loop d over correlation
+      corloops = c(0, .1, .3, .5, .7, .9)
+      for (d in 1:length(corloops)) {
+        
+        dataset = subset(fulldata,
+                         N == Nloops[a] &
+                           levels == levelloop[b] &
+                           stdev == SDloops[c] &
+                           correl == corloops[d])
+        
+        round = round + 1
+        distributiondata$N[round] = Nloops[a]
+        distributiondata$levels[round] = levelloop[b]
+        distributiondata$stdev[round] = SDloops[c]
+        distributiondata$correl[round] = corloops[d]
+        
+        ##don't work with zeroes
+        dataset2 = subset(dataset, RM1.ges > 0)
+        dataset3 = subset(dataset, RM2.ges > 0)
+        
+        ##normal distribution
+        normaloutput = fitdist(dataset2$RM1.ges, "norm", keepdata = T)
+        normaloutput2 = fitdist(dataset3$RM2.ges, "norm", keepdata = T)
+        distributiondata$norm.1.aic[round] = normaloutput$aic
+        distributiondata$norm.1.mean[round] = normaloutput$estimate[1]
+        distributiondata$norm.1.sd[round] = normaloutput$estimate[2]
+        distributiondata$norm.2.aic[round] = normaloutput2$aic
+        distributiondata$norm.2.mean[round] = normaloutput2$estimate[1]
+        distributiondata$norm.2.stdev[round] = normaloutput2$estimate[2]
+        
+        ##exponential
+        expoutput = fitdist(dataset2$RM1.ges, "exp", keepdata = T)
+        expoutput2 = fitdist(dataset3$RM2.ges, "exp", keepdata = T)
+        distributiondata$exp.1.aic[round] = expoutput$aic
+        distributiondata$exp.1.rate[round] = expoutput$estimate
+        distributiondata$exp.2.aic[round] = expoutput2$aic
+        distributiondata$exp.2.rate[round] = expoutput2$estimate
+        
+        ##gamma
+        gammaoutput = fitdist(dataset2$RM1.ges, "gamma", lower = c(0,0), start = list(shape = 1.0, rate = 5), keepdata = T)
+        gammaoutput2 = fitdist(dataset3$RM2.ges, "gamma", lower = c(0,0), start = list(shape = 1.0, rate = 5), keepdata = T)
+        distributiondata$gamma.1.aic[round] = gammaoutput$aic
+        distributiondata$gamma.1.shape[round] = gammaoutput$estimate[1]
+        distributiondata$gamma.1.rate[round] = gammaoutput$estimate[2]
+        distributiondata$gamma.2.aic[round] = gammaoutput2$aic
+        distributiondata$gamma.2.shape[round] = gammaoutput2$estimate[1]
+        distributiondata$gamma.2.rate[round] = gammaoutput2$estimate[2]
+        
+        ##log normal
+        lognormoutput = fitdist(dataset2$RM1.ges, "lnorm", keepdata = T)
+        lognormoutput2 = fitdist(dataset3$RM2.ges, "lnorm", keepdata = T)
+        distributiondata$lnorm.1.aic[round] = lognormoutput$aic
+        distributiondata$lnorm.1.mean[round] = lognormoutput$estimate[1]
+        distributiondata$lnorm.1.stdev[round] = lognormoutput$estimate[2]
+        distributiondata$lnorm.2.aic[round] = lognormoutput2$aic
+        distributiondata$lnorm.2.mean[round] = lognormoutput2$estimate[1]
+        distributiondata$lnorm.2.stdev[round] = lognormoutput2$estimate[2]
+        
+        ##beta
+        betaoutput = fitdist(dataset2$RM1.ges, "beta", keepdata = T)
+        betaoutput2 = fitdist(dataset3$RM2.ges, "beta", keepdata = T)
+        distributiondata$beta.1.aic[round] = betaoutput$aic
+        distributiondata$beta.1.shape1[round] = betaoutput$estimate[1]
+        distributiondata$beta.1.shape2[round] = betaoutput$estimate[2]
+        distributiondata$beta.2.aic[round] = betaoutput2$aic
+        distributiondata$beta.2.shape1[round] = betaoutput2$estimate[1]
+        distributiondata$beta.2.shape2[round] = betaoutput2$estimate[2]
+        
+        ##chi square
+        chioutput = fitdist(dataset2$RM1.ges, "chisq", start = list(df = 1))
+        chioutput2 = fitdist(dataset3$RM2.ges, "chisq", start = list(df = 1))
+        distributiondata$chi.1.aic[round] = chioutput$aic
+        distributiondata$chi.1.df[round] = chioutput$estimate
+        distributiondata$chi.2.aic[round] = chioutput2$aic
+        distributiondata$chi.2.df[round] = chioutput2$estimate
+        
+        ##f
+        foutput = fitdist(dataset2$RM1.ges, "f", keepdata = T, 
+                          start = list(df1 = (dataset$RM1.dfm[1]), df2 = (dataset$RM1.dfr[1])), 
+                          optim.method="SANN")
+        foutput2 = fitdist(dataset3$RM2.ges, "f", keepdata = T, 
+                           start = list(df1 = (dataset$RM2.dfm[1]), df2 = (dataset$RM2.dfr[1])), 
+                           optim.method="SANN")
+        distributiondata$f.1.aic[round] = foutput$aic
+        distributiondata$f.1.df1[round] = foutput$estimate[1]
+        distributiondata$f.1.df2[round] = foutput$estimate[2]
+        distributiondata$f.2.aic[round] = foutput2$aic
+        distributiondata$f.2.df1[round] = foutput2$estimate[1]
+        distributiondata$f.2.df2[round] = foutput2$estimate[2]        
+
+        ##logistic
+        logoutput = fitdist(dataset2$RM1.ges, "logis", keepdata = T)
+        logoutput2 = fitdist(dataset3$RM2.ges, "logis", keepdata = T)
+        distributiondata$log.1.aic[round] = logoutput$aic
+        distributiondata$log.1.loc[round] = logoutput$estimate[1]
+        distributiondata$log.1.scale[round] = logoutput$estimate[2]
+        distributiondata$log.2.aic[round] = logoutput2$aic
+        distributiondata$log.2.loc[round] = logoutput2$estimate[1]
+        distributiondata$log.2.scale[round] = logoutput2$estimate[2]
+        
+      }
+    }
+  }
+}
+
+write.csv(distributiondata, "ges_distribution.csv", row.names = F)
+
+####pes rm1 versus bn1####
+round = 0
+distributiondata = data.frame(N = 1:1152)
+
+##loop a over N
+Nloops = seq(20, 110, 6)
+for (a in 1:length(Nloops)) {
+  ##loops b over levels
+  levelloop = 3:6 
+  for (b in 1:length(levelloop)) {
+    ##loop c over effect size
+    SDloops = c(5, 3, 1)
+    for (c in 1:length(SDloops)) {
+      ##loop d over correlation
+      corloops = c(0, .1, .3, .5, .7, .9)
+      for (d in 1:length(corloops)) {
+        
+        dataset = subset(fulldata,
+                         N == Nloops[a] &
+                           levels == levelloop[b] &
+                           stdev == SDloops[c] &
+                           correl == corloops[d])
+        
+        round = round + 1
+        distributiondata$N[round] = Nloops[a]
+        distributiondata$levels[round] = levelloop[b]
+        distributiondata$stdev[round] = SDloops[c]
+        distributiondata$correl[round] = corloops[d]
+        
+        ##don't work with zeroes
+        dataset2 = subset(dataset, RM1.pes > 0)
+        dataset3 = subset(dataset, BN1.pes > 0)
+        
+        ##normal distribution
+        normaloutput = fitdist(dataset2$RM1.pes, "norm", keepdata = T)
+        normaloutput2 = fitdist(dataset3$BN1.pes, "norm", keepdata = T)
+        distributiondata$norm.1.aic[round] = normaloutput$aic
+        distributiondata$norm.1.mean[round] = normaloutput$estimate[1]
+        distributiondata$norm.1.sd[round] = normaloutput$estimate[2]
+        distributiondata$norm.2.aic[round] = normaloutput2$aic
+        distributiondata$norm.2.mean[round] = normaloutput2$estimate[1]
+        distributiondata$norm.2.stdev[round] = normaloutput2$estimate[2]
+        
+        ##exponential
+        expoutput = fitdist(dataset2$RM1.pes, "exp", keepdata = T)
+        expoutput2 = fitdist(dataset3$BN1.pes, "exp", keepdata = T)
+        distributiondata$exp.1.aic[round] = expoutput$aic
+        distributiondata$exp.1.rate[round] = expoutput$estimate
+        distributiondata$exp.2.aic[round] = expoutput2$aic
+        distributiondata$exp.2.rate[round] = expoutput2$estimate
+        
+        ##gamma
+        gammaoutput = fitdist(dataset2$RM1.pes, "gamma", lower = c(0,0), start = list(shape = 1.0, rate = 5), keepdata = T)
+        gammaoutput2 = fitdist(dataset3$BN1.pes, "gamma", lower = c(0,0), start = list(shape = 1.0, rate = 5), keepdata = T)
+        distributiondata$gamma.1.aic[round] = gammaoutput$aic
+        distributiondata$gamma.1.shape[round] = gammaoutput$estimate[1]
+        distributiondata$gamma.1.rate[round] = gammaoutput$estimate[2]
+        distributiondata$gamma.2.aic[round] = gammaoutput2$aic
+        distributiondata$gamma.2.shape[round] = gammaoutput2$estimate[1]
+        distributiondata$gamma.2.rate[round] = gammaoutput2$estimate[2]
+        
+        ##log normal
+        lognormoutput = fitdist(dataset2$RM1.pes, "lnorm", keepdata = T)
+        lognormoutput2 = fitdist(dataset3$BN1.pes, "lnorm", keepdata = T)
+        distributiondata$lnorm.1.aic[round] = lognormoutput$aic
+        distributiondata$lnorm.1.mean[round] = lognormoutput$estimate[1]
+        distributiondata$lnorm.1.stdev[round] = lognormoutput$estimate[2]
+        distributiondata$lnorm.2.aic[round] = lognormoutput2$aic
+        distributiondata$lnorm.2.mean[round] = lognormoutput2$estimate[1]
+        distributiondata$lnorm.2.stdev[round] = lognormoutput2$estimate[2]
+        
+        ##beta
+        betaoutput = fitdist(dataset2$RM1.pes, "beta", keepdata = T)
+        betaoutput2 = fitdist(dataset3$BN1.pes, "beta", keepdata = T)
+        distributiondata$beta.1.aic[round] = betaoutput$aic
+        distributiondata$beta.1.shape1[round] = betaoutput$estimate[1]
+        distributiondata$beta.1.shape2[round] = betaoutput$estimate[2]
+        distributiondata$beta.2.aic[round] = betaoutput2$aic
+        distributiondata$beta.2.shape1[round] = betaoutput2$estimate[1]
+        distributiondata$beta.2.shape2[round] = betaoutput2$estimate[2]
+        
+        ##chi square
+        chioutput = fitdist(dataset2$RM1.pes, "chisq", start = list(df = 1))
+        chioutput2 = fitdist(dataset3$BN1.pes, "chisq", start = list(df = 1))
+        distributiondata$chi.1.aic[round] = chioutput$aic
+        distributiondata$chi.1.df[round] = chioutput$estimate
+        distributiondata$chi.2.aic[round] = chioutput2$aic
+        distributiondata$chi.2.df[round] = chioutput2$estimate
+        
+        ##f
+        foutput = fitdist(dataset2$RM1.pes, "f", keepdata = T, 
+                          start = list(df1 = (dataset$RM1.dfm[1]), df2 = (dataset$RM1.dfr[1])), 
+                          optim.method="SANN")
+        foutput2 = fitdist(dataset3$BN1.pes, "f", keepdata = T, 
+                           start = list(df1 = (dataset$BN1.dfm[1]), df2 = (dataset$BN1.dfr[1])), 
+                           optim.method="SANN")
+        distributiondata$f.1.aic[round] = foutput$aic
+        distributiondata$f.1.df1[round] = foutput$estimate[1]
+        distributiondata$f.1.df2[round] = foutput$estimate[2]
+        distributiondata$f.2.aic[round] = foutput2$aic
+        distributiondata$f.2.df1[round] = foutput2$estimate[1]
+        distributiondata$f.2.df2[round] = foutput2$estimate[2]        
+        
+        ##logistic
+        logoutput = fitdist(dataset2$RM1.pes, "logis", keepdata = T)
+        logoutput2 = fitdist(dataset3$BN1.pes, "logis", keepdata = T)
+        distributiondata$log.1.aic[round] = logoutput$aic
+        distributiondata$log.1.loc[round] = logoutput$estimate[1]
+        distributiondata$log.1.scale[round] = logoutput$estimate[2]
+        distributiondata$log.2.aic[round] = logoutput2$aic
+        distributiondata$log.2.loc[round] = logoutput2$estimate[1]
+        distributiondata$log.2.scale[round] = logoutput2$estimate[2]
+        
+      }
+    }
+  }
+}
+
+write.csv(distributiondata, "pes_distribution.csv", row.names = F)
+
+####fes rm1 versus rm2####
+round = 0
+distributiondata = data.frame(N = 1:1152)
+
+##loop a over N
+Nloops = seq(20, 110, 6)
+for (a in 1:length(Nloops)) {
+  ##loops b over levels
+  levelloop = 3:6 
+  for (b in 1:length(levelloop)) {
+    ##loop c over effect size
+    SDloops = c(5, 3, 1)
+    for (c in 1:length(SDloops)) {
+      ##loop d over correlation
+      corloops = c(0, .1, .3, .5, .7, .9)
+      for (d in 1:length(corloops)) {
+        
+        dataset = subset(fulldata,
+                         N == Nloops[a] &
+                           levels == levelloop[b] &
+                           stdev == SDloops[c] &
+                           correl == corloops[d])
+        
+        round = round + 1
+        distributiondata$N[round] = Nloops[a]
+        distributiondata$levels[round] = levelloop[b]
+        distributiondata$stdev[round] = SDloops[c]
+        distributiondata$correl[round] = corloops[d]
+        
+        ##don't work with zeroes
+        dataset2 = subset(dataset, RM1.fes > 0)
+        dataset3 = subset(dataset, RM2.fes > 0)
+        
+        ##normal distribution
+        normaloutput = fitdist(dataset2$RM1.fes, "norm", keepdata = T)
+        normaloutput2 = fitdist(dataset3$RM2.fes, "norm", keepdata = T)
+        distributiondata$norm.1.aic[round] = normaloutput$aic
+        distributiondata$norm.1.mean[round] = normaloutput$estimate[1]
+        distributiondata$norm.1.sd[round] = normaloutput$estimate[2]
+        distributiondata$norm.2.aic[round] = normaloutput2$aic
+        distributiondata$norm.2.mean[round] = normaloutput2$estimate[1]
+        distributiondata$norm.2.stdev[round] = normaloutput2$estimate[2]
+        
+        ##exponential
+        expoutput = fitdist(dataset2$RM1.fes, "exp", keepdata = T)
+        expoutput2 = fitdist(dataset3$RM2.fes, "exp", keepdata = T)
+        distributiondata$exp.1.aic[round] = expoutput$aic
+        distributiondata$exp.1.rate[round] = expoutput$estimate
+        distributiondata$exp.2.aic[round] = expoutput2$aic
+        distributiondata$exp.2.rate[round] = expoutput2$estimate
+        
+        ##gamma
+        gammaoutput = fitdist(dataset2$RM1.fes, "gamma", lower = c(0,0), start = list(shape = 1.0, rate = 5), keepdata = T)
+        gammaoutput2 = fitdist(dataset3$RM2.fes, "gamma", lower = c(0,0), start = list(shape = 1.0, rate = 5), keepdata = T)
+        distributiondata$gamma.1.aic[round] = gammaoutput$aic
+        distributiondata$gamma.1.shape[round] = gammaoutput$estimate[1]
+        distributiondata$gamma.1.rate[round] = gammaoutput$estimate[2]
+        distributiondata$gamma.2.aic[round] = gammaoutput2$aic
+        distributiondata$gamma.2.shape[round] = gammaoutput2$estimate[1]
+        distributiondata$gamma.2.rate[round] = gammaoutput2$estimate[2]
+        
+        ##log normal
+        lognormoutput = fitdist(dataset2$RM1.fes, "lnorm", keepdata = T)
+        lognormoutput2 = fitdist(dataset3$RM2.fes, "lnorm", keepdata = T)
+        distributiondata$lnorm.1.aic[round] = lognormoutput$aic
+        distributiondata$lnorm.1.mean[round] = lognormoutput$estimate[1]
+        distributiondata$lnorm.1.stdev[round] = lognormoutput$estimate[2]
+        distributiondata$lnorm.2.aic[round] = lognormoutput2$aic
+        distributiondata$lnorm.2.mean[round] = lognormoutput2$estimate[1]
+        distributiondata$lnorm.2.stdev[round] = lognormoutput2$estimate[2]
+        
+        ##beta
+        betaoutput = fitdist(dataset2$RM1.fes, "beta", keepdata = T)
+        betaoutput2 = fitdist(dataset3$RM2.fes, "beta", keepdata = T)
+        distributiondata$beta.1.aic[round] = betaoutput$aic
+        distributiondata$beta.1.shape1[round] = betaoutput$estimate[1]
+        distributiondata$beta.1.shape2[round] = betaoutput$estimate[2]
+        distributiondata$beta.2.aic[round] = betaoutput2$aic
+        distributiondata$beta.2.shape1[round] = betaoutput2$estimate[1]
+        distributiondata$beta.2.shape2[round] = betaoutput2$estimate[2]
+        
+        ##chi square
+        chioutput = fitdist(dataset2$RM1.fes, "chisq", start = list(df = 1))
+        chioutput2 = fitdist(dataset3$RM2.fes, "chisq", start = list(df = 1))
+        distributiondata$chi.1.aic[round] = chioutput$aic
+        distributiondata$chi.1.df[round] = chioutput$estimate
+        distributiondata$chi.2.aic[round] = chioutput2$aic
+        distributiondata$chi.2.df[round] = chioutput2$estimate
+        
+        ##f
+        foutput = fitdist(dataset2$RM1.fes, "f", keepdata = T, 
+                          start = list(df1 = (dataset$RM1.dfm[1]), df2 = (dataset$RM1.dfr[1])), 
+                          optim.method="SANN")
+        foutput2 = fitdist(dataset3$RM2.fes, "f", keepdata = T, 
+                           start = list(df1 = (dataset$RM2.dfm[1]), df2 = (dataset$RM2.dfr[1])), 
+                           optim.method="SANN")
+        distributiondata$f.1.aic[round] = foutput$aic
+        distributiondata$f.1.df1[round] = foutput$estimate[1]
+        distributiondata$f.1.df2[round] = foutput$estimate[2]
+        distributiondata$f.2.aic[round] = foutput2$aic
+        distributiondata$f.2.df1[round] = foutput2$estimate[1]
+        distributiondata$f.2.df2[round] = foutput2$estimate[2]        
+        
+        ##logistic
+        logoutput = fitdist(dataset2$RM1.fes, "logis", keepdata = T)
+        logoutput2 = fitdist(dataset3$RM2.fes, "logis", keepdata = T)
+        distributiondata$log.1.aic[round] = logoutput$aic
+        distributiondata$log.1.loc[round] = logoutput$estimate[1]
+        distributiondata$log.1.scale[round] = logoutput$estimate[2]
+        distributiondata$log.2.aic[round] = logoutput2$aic
+        distributiondata$log.2.loc[round] = logoutput2$estimate[1]
+        distributiondata$log.2.scale[round] = logoutput2$estimate[2]
+        
+      }
+    }
+  }
+}
+
+write.csv(distributiondata, "fes_distribution.csv", row.names = F)
+
+####fos rm1 versus rm2####
+round = 0
+distributiondata = data.frame(N = 1:1152)
+
+##loop a over N
+Nloops = seq(20, 110, 6)
+for (a in 1:length(Nloops)) {
+  ##loops b over levels
+  levelloop = 3:6 
+  for (b in 1:length(levelloop)) {
+    ##loop c over effect size
+    SDloops = c(5, 3, 1)
+    for (c in 1:length(SDloops)) {
+      ##loop d over correlation
+      corloops = c(0, .1, .3, .5, .7, .9)
+      for (d in 1:length(corloops)) {
+        
+        dataset = subset(fulldata,
+                         N == Nloops[a] &
+                           levels == levelloop[b] &
+                           stdev == SDloops[c] &
+                           correl == corloops[d])
+        
+        round = round + 1
+        distributiondata$N[round] = Nloops[a]
+        distributiondata$levels[round] = levelloop[b]
+        distributiondata$stdev[round] = SDloops[c]
+        distributiondata$correl[round] = corloops[d]
+        
+        ##don't work with zeroes
+        dataset2 = subset(dataset, RM1.fos > 0)
+        dataset3 = subset(dataset, RM2.fos > 0)
+        
+        ##normal distribution
+        normaloutput = fitdist(dataset2$RM1.fos, "norm", keepdata = T)
+        normaloutput2 = fitdist(dataset3$RM2.fos, "norm", keepdata = T)
+        distributiondata$norm.1.aic[round] = normaloutput$aic
+        distributiondata$norm.1.mean[round] = normaloutput$estimate[1]
+        distributiondata$norm.1.sd[round] = normaloutput$estimate[2]
+        distributiondata$norm.2.aic[round] = normaloutput2$aic
+        distributiondata$norm.2.mean[round] = normaloutput2$estimate[1]
+        distributiondata$norm.2.stdev[round] = normaloutput2$estimate[2]
+        
+        ##exponential
+        expoutput = fitdist(dataset2$RM1.fos, "exp", keepdata = T)
+        expoutput2 = fitdist(dataset3$RM2.fos, "exp", keepdata = T)
+        distributiondata$exp.1.aic[round] = expoutput$aic
+        distributiondata$exp.1.rate[round] = expoutput$estimate
+        distributiondata$exp.2.aic[round] = expoutput2$aic
+        distributiondata$exp.2.rate[round] = expoutput2$estimate
+        
+        ##gamma
+        gammaoutput = fitdist(dataset2$RM1.fos, "gamma", lower = c(0,0), start = list(shape = 1.0, rate = 5), keepdata = T)
+        gammaoutput2 = fitdist(dataset3$RM2.fos, "gamma", lower = c(0,0), start = list(shape = 1.0, rate = 5), keepdata = T)
+        distributiondata$gamma.1.aic[round] = gammaoutput$aic
+        distributiondata$gamma.1.shape[round] = gammaoutput$estimate[1]
+        distributiondata$gamma.1.rate[round] = gammaoutput$estimate[2]
+        distributiondata$gamma.2.aic[round] = gammaoutput2$aic
+        distributiondata$gamma.2.shape[round] = gammaoutput2$estimate[1]
+        distributiondata$gamma.2.rate[round] = gammaoutput2$estimate[2]
+        
+        ##log normal
+        lognormoutput = fitdist(dataset2$RM1.fos, "lnorm", keepdata = T)
+        lognormoutput2 = fitdist(dataset3$RM2.fos, "lnorm", keepdata = T)
+        distributiondata$lnorm.1.aic[round] = lognormoutput$aic
+        distributiondata$lnorm.1.mean[round] = lognormoutput$estimate[1]
+        distributiondata$lnorm.1.stdev[round] = lognormoutput$estimate[2]
+        distributiondata$lnorm.2.aic[round] = lognormoutput2$aic
+        distributiondata$lnorm.2.mean[round] = lognormoutput2$estimate[1]
+        distributiondata$lnorm.2.stdev[round] = lognormoutput2$estimate[2]
+        
+        ##beta
+        betaoutput = fitdist(dataset2$RM1.fos, "beta", keepdata = T)
+        betaoutput2 = fitdist(dataset3$RM2.fos, "beta", keepdata = T)
+        distributiondata$beta.1.aic[round] = betaoutput$aic
+        distributiondata$beta.1.shape1[round] = betaoutput$estimate[1]
+        distributiondata$beta.1.shape2[round] = betaoutput$estimate[2]
+        distributiondata$beta.2.aic[round] = betaoutput2$aic
+        distributiondata$beta.2.shape1[round] = betaoutput2$estimate[1]
+        distributiondata$beta.2.shape2[round] = betaoutput2$estimate[2]
+        
+        ##chi square
+        chioutput = fitdist(dataset2$RM1.fos, "chisq", start = list(df = 1))
+        chioutput2 = fitdist(dataset3$RM2.fos, "chisq", start = list(df = 1))
+        distributiondata$chi.1.aic[round] = chioutput$aic
+        distributiondata$chi.1.df[round] = chioutput$estimate
+        distributiondata$chi.2.aic[round] = chioutput2$aic
+        distributiondata$chi.2.df[round] = chioutput2$estimate
+        
+        ##f
+        foutput = fitdist(dataset2$RM1.fos, "f", keepdata = T, 
+                          start = list(df1 = (dataset$RM1.dfm[1]), df2 = (dataset$RM1.dfr[1])), 
+                          optim.method="SANN")
+        foutput2 = fitdist(dataset3$RM2.fos, "f", keepdata = T, 
+                           start = list(df1 = (dataset$RM2.dfm[1]), df2 = (dataset$RM2.dfr[1])), 
+                           optim.method="SANN")
+        distributiondata$f.1.aic[round] = foutput$aic
+        distributiondata$f.1.df1[round] = foutput$estimate[1]
+        distributiondata$f.1.df2[round] = foutput$estimate[2]
+        distributiondata$f.2.aic[round] = foutput2$aic
+        distributiondata$f.2.df1[round] = foutput2$estimate[1]
+        distributiondata$f.2.df2[round] = foutput2$estimate[2]        
+        
+        ##logistic
+        logoutput = fitdist(dataset2$RM1.fos, "logis", keepdata = T)
+        logoutput2 = fitdist(dataset3$RM2.fos, "logis", keepdata = T)
+        distributiondata$log.1.aic[round] = logoutput$aic
+        distributiondata$log.1.loc[round] = logoutput$estimate[1]
+        distributiondata$log.1.scale[round] = logoutput$estimate[2]
+        distributiondata$log.2.aic[round] = logoutput2$aic
+        distributiondata$log.2.loc[round] = logoutput2$estimate[1]
+        distributiondata$log.2.scale[round] = logoutput2$estimate[2]
+    
+      }
+    }
+  }
+}
+
+write.csv(distributiondata, "fos_distribution.csv", row.names = F)
+
+####POS bn2####
+round = 0
+distributiondata = data.frame(N = 1:1152)
+
+##loop a over N
+Nloops = seq(20, 110, 6)
+for (a in 1:length(Nloops)) {
+  ##loops b over levels
+  levelloop = 3:6 
+  for (b in 1:length(levelloop)) {
+    ##loop c over effect size
+    SDloops = c(5, 3, 1)
+    for (c in 1:length(SDloops)) {
+      ##loop d over correlation
+      corloops = c(0, .1, .3, .5, .7, .9)
+      for (d in 1:length(corloops)) {
+        
+        dataset = subset(fulldata,
+                         N == Nloops[a] &
+                           levels == levelloop[b] &
+                           stdev == SDloops[c] &
+                           correl == corloops[d])
+        
+        round = round + 1
+        distributiondata$N[round] = Nloops[a]
+        distributiondata$levels[round] = levelloop[b]
+        distributiondata$stdev[round] = SDloops[c]
+        distributiondata$correl[round] = corloops[d]
+        
+        ##don't work with zeroes
+        dataset3 = subset(dataset, BN2.pos > 0)
+
+        ##normal distribution
+        normaloutput2 = fitdist(dataset3$BN2.pos, "norm", keepdata = T)
+        distributiondata$norm.2.aic[round] = normaloutput2$aic
+        distributiondata$norm.2.mean[round] = normaloutput2$estimate[1]
+        distributiondata$norm.2.stdev[round] = normaloutput2$estimate[2]
+
+        ##exponential
+        expoutput2 = fitdist(dataset3$BN2.pos, "exp", keepdata = T)
+        distributiondata$exp.2.aic[round] = expoutput2$aic
+        distributiondata$exp.2.rate[round] = expoutput2$estimate
+
+        ##gamma
+        gammaoutput2 = fitdist(dataset3$BN2.pos, "gamma", lower = c(0,0), start = list(shape = 1.0, rate = 5), keepdata = T)
+        distributiondata$gamma.2.aic[round] = gammaoutput2$aic
+        distributiondata$gamma.2.shape[round] = gammaoutput2$estimate[1]
+        distributiondata$gamma.2.rate[round] = gammaoutput2$estimate[2]
+
+        ##log normal
+        lognormoutput2 = fitdist(dataset3$BN2.pos, "lnorm", keepdata = T)
+        distributiondata$lnorm.2.aic[round] = lognormoutput2$aic
+        distributiondata$lnorm.2.mean[round] = lognormoutput2$estimate[1]
+        distributiondata$lnorm.2.stdev[round] = lognormoutput2$estimate[2]
+
+        ##beta
+        betaoutput2 = fitdist(dataset3$BN2.pos, "beta", keepdata = T)
+        distributiondata$beta.2.aic[round] = betaoutput2$aic
+        distributiondata$beta.2.shape1[round] = betaoutput2$estimate[1]
+        distributiondata$beta.2.shape2[round] = betaoutput2$estimate[2]
+
+        ##chi square
+        chioutput2 = fitdist(dataset3$BN2.pos, "chisq", start = list(df = 1))
+        distributiondata$chi.2.aic[round] = chioutput2$aic
+        distributiondata$chi.2.df[round] = chioutput2$estimate
+
+        ##f
+        foutput2 = fitdist(dataset3$BN2.pos, "f", keepdata = T, 
+                           start = list(df1 = (dataset$BN2.dfm[1]), df2 = (dataset$BN2.dfr[1])), 
+                           optim.method="SANN")
+        distributiondata$f.2.aic[round] = foutput2$aic
+        distributiondata$f.2.df1[round] = foutput2$estimate[1]
+        distributiondata$f.2.df2[round] = foutput2$estimate[2]        
+
+        ##logistic
+        #logoutput2 = fitdist(dataset3$BN2.pos, "logis", keepdata = T)
+        #distributiondata$log.2.aic[round] = logoutput2$aic
+        #distributiondata$log.2.loc[round] = logoutput2$estimate[1]
+        #distributiondata$log.2.scale[round] = logoutput2$estimate[2]
+
+      }
+    }
+  }
+}
+
+write.csv(distributiondata, "pos_distribution.csv", row.names = F)
+
+```
+
+```{r examine-dist}
+
+##import distribution data
+FESdist = read.csv("fes_distribution.csv")
+FOSdist = read.csv("fos_distribution.csv")
+PESdist = read.csv("pes_distribution.csv")
+POSdist = read.csv("pos_distribution.csv")
+GESdist = read.csv("ges_distribution.csv")
+
+##examine the types of distributions most commonly picked
+aiccolumns1 = c("norm.1.aic", "exp.1.aic", "gamma.1.aic", "lnorm.1.aic", 
+                "beta.1.aic", "chi.1.aic", "f.1.aic", "log.1.aic")
+aiccolumns2 = c("norm.2.aic", "exp.2.aic", "gamma.2.aic", "lnorm.2.aic",
+                "beta.2.aic", "chi.2.aic", "f.2.aic", "log.2.aic")
+
+####fes information####
+##calculate for first estimate
+temp = FESdist[ , aiccolumns1]
+table(colnames(temp)[apply(temp,1,which.min)])
+FESdist$smallest1 = colnames(temp)[apply(temp,1,which.min)]
+
+##calculate for the second estimate
+temp = FESdist[ , aiccolumns2]
+table(colnames(temp)[apply(temp,1,which.min)])
+FESdist$smallest2 = colnames(temp)[apply(temp,1,which.min)]
+
+with(FESdist, table(smallest1, N))
+with(FESdist, table(smallest1, stdev))
+with(FESdist, table(smallest1, correl))
+with(FESdist, table(smallest1, levels))
+
+with(FESdist, table(smallest2, N))
+with(FESdist, table(smallest2, stdev))
+with(FESdist, table(smallest2, correl))
+with(FESdist, table(smallest2, levels))
+
+####fos information####
+##calculate for first estimate
+temp = FOSdist[ , aiccolumns1]
+table(colnames(temp)[apply(temp,1,which.min)])
+FOSdist$smallest1 = colnames(temp)[apply(temp,1,which.min)]
+
+##calculate for the second estimate
+temp = FOSdist[ , aiccolumns2]
+table(colnames(temp)[apply(temp,1,which.min)])
+FOSdist$smallest2 = colnames(temp)[apply(temp,1,which.min)]
+
+with(FOSdist, table(smallest1, N))
+with(FOSdist, table(smallest1, stdev))
+with(FOSdist, table(smallest1, correl))
+with(FOSdist, table(smallest1, levels))
+
+with(FOSdist, table(smallest2, N))
+with(FOSdist, table(smallest2, stdev))
+with(FOSdist, table(smallest2, correl))
+with(FOSdist, table(smallest2, levels))
+
+####ges information####
+##calculate for first estimate
+temp = GESdist[ , aiccolumns1]
+table(colnames(temp)[apply(temp,1,which.min)])
+GESdist$smallest1 = colnames(temp)[apply(temp,1,which.min)]
+
+##calculate for the second estimate
+temp = GESdist[ , aiccolumns2]
+table(colnames(temp)[apply(temp,1,which.min)])
+GESdist$smallest2 = colnames(temp)[apply(temp,1,which.min)]
+
+with(GESdist, table(smallest1, N))
+with(GESdist, table(smallest1, stdev))
+with(GESdist, table(smallest1, correl))
+with(GESdist, table(smallest1, levels))
+
+with(GESdist, table(smallest2, N))
+with(GESdist, table(smallest2, stdev))
+with(GESdist, table(smallest2, correl))
+with(GESdist, table(smallest2, levels))
+
+####pes information####
+##calculate for first estimate
+temp = PESdist[ , aiccolumns1]
+table(colnames(temp)[apply(temp,1,which.min)])
+PESdist$smallest1 = colnames(temp)[apply(temp,1,which.min)]
+
+##calculate for the second estimate
+temp = PESdist[ , aiccolumns2]
+table(colnames(temp)[apply(temp,1,which.min)])
+PESdist$smallest2 = colnames(temp)[apply(temp,1,which.min)]
+
+with(PESdist, table(smallest1, N))
+with(PESdist, table(smallest1, stdev))
+with(PESdist, table(smallest1, correl))
+with(PESdist, table(smallest1, levels))
+
+with(PESdist, table(smallest2, N))
+with(PESdist, table(smallest2, stdev))
+with(PESdist, table(smallest2, correl))
+with(PESdist, table(smallest2, levels))
+
+####POS information####
+##calculate for the second estimate
+temp = POSdist[ , aiccolumns2[-length(aiccolumns2)]]
+table(colnames(temp)[apply(temp,1,which.min)])
+POSdist$smallest2 = colnames(temp)[apply(temp,1,which.min)]
+
+with(POSdist, table(smallest2, N))
+with(POSdist, table(smallest2, stdev))
+with(POSdist, table(smallest2, correl))
+with(POSdist, table(smallest2, levels))
+```
+
+```{r nc-dist}
+compdist = matrix(NA, nrow = 1152, ncol = 9)
+compdist = as.data.frame(compdist)
+colnames(compdist) = c("Type", "N", "levels", "stdev", "correl", "fcs", "fnccs", "bcs", "bnccs")
+####GES RM1####
+simnum = 0
+
+Nloops = seq(20, 111, 6)
+for (a in 1:length(Nloops)) {
+  levelloop = 3:6 
+
+  for (b in 1:length(levelloop)) {
+    SDloops = c(5, 3, 1)
+
+    for (c in 1:length(SDloops)) {
+      corloops = c(0, .1, .3, .5, .7, .9)
+
+      for (d in 1:length(corloops)) {
+        
+        simnum = simnum + 1
+
+        tempdata = subset(fulldata, 
+                          N == Nloops[a] & stdev == SDloops[c] & correl == corloops[d] & levels == levelloop[b])
+        CP = seq(min(tempdata$RM1.ges), max(tempdata$RM1.ges), .05)
+        pfraw = NA
+        pfrawnc = NA
+        betaraw = NA
+        betarawnc = NA
+        bin = NA
+
+        for (i in 1:length(CP)) {
+          
+          ##calculate the values for f
+          pfraw[i] = pf(CP[i], df1 = mean(tempdata$RM1.dfm), df2 = mean(tempdata$RM1.dfr))
+          
+          ##calculate the frequency of values you would expect from noncentral F
+          pfrawnc[i] = pf(CP[i], df1 = mean(tempdata$RM1.dfm), df2 = mean(tempdata$RM1.dfr), ncp = mean(tempdata$ncp))
+          
+          ##calculate the frequency of values you would expect from beta
+          GEStemp = subset(GESdist, 
+                           N == Nloops[a] & stdev == SDloops[c] & correl == corloops[d] & levels == levelloop[b])
+          betaraw[i] = pbeta(CP[i], shape1 = GEStemp$beta.1.shape1, shape2 = GEStemp$beta.1.shape2)
+          
+          ##calculate noncentral beta
+          betarawnc[i] = pbeta(CP[i], shape1 = GEStemp$beta.1.shape1, 
+                               shape2 = GEStemp$beta.1.shape2, ncp = mean(tempdata$ncp))
+          
+          bin[i] = sum(as.numeric(tempdata$RM1.ges < CP[i]))
+          
+        }
+
+        ##convert to frequency 
+        samplesize = length(tempdata)
+        last = length(pfraw)
+        freqf = (c(pfraw[-1],0) - pfraw)[-last] * samplesize
+        freqfnc = (c(pfrawnc[-1],0) - pfrawnc)[-last] * samplesize
+        freqb = (c(betaraw[-1],0) - betaraw)[-last] * samplesize
+        freqbnc = (c(betarawnc[-1],0) - betarawnc)[-last] * samplesize
+        freqreal = (c(bin[-1],0) - bin)[-last]
+        
+        ##compare to the actual distribution
+        compdist$Type[simnum] = "RM1.ges"
+        compdist$N[simnum] = Nloops[a]
+        compdist$levels[simnum] = levelloop[b]
+        compdist$stdev[simnum] = SDloops[c]
+        compdist$correl[simnum] = corloops[d]
+        compdist$fcs[simnum] = sum((freqreal - freqf)^2 / freqf)
+        compdist$fnccs[simnum] = sum((freqreal - freqfnc)^2 / freqfnc)
+        compdist$bcs[simnum] = sum((freqreal - freqb)^2 / freqb)
+        compdist$bnccs[simnum] = sum((freqreal - freqbnc)^2 / freqbnc)
+      }
+    }
+  }
+}
+```
+
+```{r dist-graph}
+examplelarge = subset(largedata, levels == 4)
+normalmean = PESdist$norm.1.mean[PESdist$levels == 4 & PESdist$correl == 0 & PESdist$stdev == 1 & PESdist$N == 110]
+normalsd = PESdist$norm.1.sd[PESdist$levels == 4 & PESdist$correl == 0 & PESdist$stdev == 1 & PESdist$N == 110]
+beta1 = PESdist$beta.1.shape1[PESdist$levels == 4 & PESdist$correl == 0 & PESdist$stdev == 1 & PESdist$N == 110]
+beta2 = PESdist$beta.1.shape2[PESdist$levels == 4 & PESdist$correl == 0 & PESdist$stdev == 1 & PESdist$N == 110]
+gshape = PESdist$gamma.1.shape[PESdist$levels == 4 & PESdist$correl == 0 & PESdist$stdev == 1 & PESdist$N == 110]
+grate = PESdist$gamma.1.rate[PESdist$levels == 4 & PESdist$correl == 0 & PESdist$stdev == 1 & PESdist$N == 110]
+
+binsize = .005
+samplesize = 1000
+
+CP = seq(min(examplelarge$RM1.pes), max(examplelarge$RM1.pes), .005)
+##calculate the values for f
+pfraw = pf(CP, df1 = mean(examplelarge$RM1.dfm), df2 = mean(examplelarge$RM1.dfr))
+
+##calculate the frequency of values you would expect from noncentral F
+pfrawnc = pf(CP, df1 = mean(examplelarge$RM1.dfm), df2 = mean(examplelarge$RM1.dfr), ncp = mean(examplelarge$ncp))
+          
+##calculate the frequency of values you would expect from beta
+betaraw = pbeta(CP, shape1 = beta1, shape2 = beta2)
+
+##calculate the frequency of values you would expect from normal
+normalraw = pnorm(CP, mean = normalmean, sd = normalsd)
+
+##calculate the frequency of values you would expect from gamma
+gammaraw = pgamma(CP, shape = gshape, rate = grate)
+
+for (i in 1:length(CP)){
+  bin[i] = sum(as.numeric(examplelarge$RM2.pes < CP[i]))
+  }
+
+last = length(pfraw)
+freqf = (c(pfraw[-1],0) - pfraw)[-last] * samplesize
+freqfnc = (c(pfrawnc[-1],0) - pfrawnc)[-last] * samplesize
+freqb = (c(betaraw[-1],0) - betaraw)[-last] * samplesize
+freqnorm = (c(normalraw[-1],0) - normalraw)[-last] * samplesize
+freqgamma = (c(gammaraw[-1],0) - gammaraw)[-last] * samplesize
+freqreal = (c(bin[-1],0) - bin)[-last]
+
+CP1 = CP[-1]
+freqdata = cbind.data.frame("freqf1" = freqf,"freqfnc1" = freqfnc,
+                            "freqb1" = freqb, CP1, "freqnorm1" = freqnorm, 
+                            "freqgamma1" = freqgamma, "freqreal1" = freqreal)   
+  
+distgraph = ggplot(freqdata, aes(CP1, freqreal)) +
+    geom_line(data = freqdata, aes(x = CP1, y = freqreal1), color = "red", linetype = "solid") +
+    geom_line(data = freqdata, aes(x = CP1, y = freqb1), linetype = "dashed") + 
+    geom_line(data = freqdata, aes(x = CP1, y = freqfnc1), linetype = "dotted") +
+    geom_line(data = freqdata, aes(x = CP1, y = freqnorm1), linetype = "dotdash") +
+    geom_line(data = freqdata, aes(x = CP1, y = freqgamma1), linetype = "longdash") +  
+    cleanup +
+    xlab("Partial Eta Squared") + 
+    ylab("Frequency") +
+    annotate("text", x = .19, y = 60, label = "– – Gamma", hjust = 0) +
+    annotate("text", x = .19, y = 56, label = "-- Beta", hjust = 0) +
+    annotate("text", x = .19, y = 52, label = "-. Normal", hjust = 0) +
+    annotate("text", x = .19, y = 48, label = ".. F", hjust = 0) +
+    annotate("text", x = .19, y = 44, label = "Observed", hjust = 0, color = "red")
+
+tiff(filename = "distgraph.tiff", res = 300, width = 6, 
+     height = 6, units = 'in', compression = "lzw")
+plot(distgraph)
+dev.off()    
+  
+    
+  
+```
+
+```{r confidenceintervals}
+CItest = matrix(NA, nrow = 1152, ncol = 31)
+colnames(CItest) = c("LLges.RM1", "ULges.RM1", "LLges.RM2", "ULges.RM2", 
+                     "ges.RM1.mean", "ges.RM2.mean",
+                     "LLfos.RM1", "ULfos.RM1", "LLfos.RM2", "ULfos.RM2",
+                     "fos.RM1.mean", "fos.RM2.mean",
+                     "LLpes.RM1", "ULpes.RM1", "LLpes.RM2", "ULpes.RM2",
+                     "pes.RM1.mean", "pes.RM2.mean",
+                     "LLfes.RM1", "ULfes.RM1", "LLfes.RM2", "ULfes.RM2",
+                     "fes.RM1.mean", "fes.RM2.mean",
+                     "LLpos.BN2", "ULpos.BN2", "pos.BN2.mean",
+                     "N", "levels", "correl", "stdev")
+
+CItest = as.data.frame(CItest)
+i = 1
+
+Nloops = seq(20, 111, 6)
+for (a in 1:length(Nloops)) {
+  levelloop = 3:6 
+
+  for (b in 1:length(levelloop)) {
+    SDloops = c(5, 3, 1)
+
+    for (c in 1:length(SDloops)) {
+      corloops = c(0, .1, .3, .5, .7, .9)
+
+      for (d in 1:length(corloops)) {
+        
+        tempdata = subset(fulldata, N == Nloops[a] & 
+                            stdev == SDloops[c] & 
+                            correl == corloops[d] & 
+                            levels == levelloop[b])
+        
+        CItest$N[i] = Nloops[a]
+        CItest$levels[i] = levelloop[b]
+        CItest$correl[i] = corloops[d]
+        CItest$stdev[i] = SDloops[c]
+        
+        CItest$LLges.RM1[i] = quantile(tempdata$RM1.ges, probs = c(0.025,0.975))[1]
+        CItest$ULges.RM1[i] = quantile(tempdata$RM1.ges, probs = c(0.025,0.975))[2]
+        CItest$LLges.RM2[i] = quantile(tempdata$RM2.ges, probs = c(0.025,0.975))[1]
+        CItest$ULges.RM2[i] = quantile(tempdata$RM2.ges, probs = c(0.025,0.975))[2]
+        CItest$ges.RM1.mean[i] = mean(tempdata$RM1.ges)
+        CItest$ges.RM2.mean[i] = mean(tempdata$RM2.ges)
+        
+        CItest$LLfos.RM1[i] = quantile(tempdata$RM1.fos, probs = c(0.025,0.975))[1]
+        CItest$ULfos.RM1[i] = quantile(tempdata$RM1.fos, probs = c(0.025,0.975))[2]
+        CItest$LLfos.RM2[i] = quantile(tempdata$RM2.fos, probs = c(0.025,0.975))[1]
+        CItest$ULfos.RM2[i] = quantile(tempdata$RM2.fos, probs = c(0.025,0.975))[2]
+        CItest$fos.RM1.mean[i] = mean(tempdata$RM1.fos)
+        CItest$fos.RM2.mean[i] = mean(tempdata$RM2.fos)
+        
+        CItest$LLfes.RM1[i] = quantile(tempdata$RM1.fes, probs = c(0.025,0.975))[1]
+        CItest$ULfes.RM1[i] = quantile(tempdata$RM1.fes, probs = c(0.025,0.975))[2]
+        CItest$LLfes.RM2[i] = quantile(tempdata$RM2.fes, probs = c(0.025,0.975))[1]
+        CItest$ULfes.RM2[i] = quantile(tempdata$RM2.fes, probs = c(0.025,0.975))[2]
+        CItest$fes.RM1.mean[i] = mean(tempdata$RM1.fes)
+        CItest$fes.RM2.mean[i] = mean(tempdata$RM2.fes)
+        
+        CItest$LLpes.RM1[i] = quantile(tempdata$RM1.pes, probs = c(0.025,0.975))[1]
+        CItest$ULpes.RM1[i] = quantile(tempdata$RM1.pes, probs = c(0.025,0.975))[2]
+        CItest$LLpes.RM2[i] = quantile(tempdata$RM2.pes, probs = c(0.025,0.975))[1]
+        CItest$ULpes.RM2[i] = quantile(tempdata$RM2.pes, probs = c(0.025,0.975))[2]
+        CItest$pes.RM1.mean[i] = mean(tempdata$RM1.pes)
+        CItest$pes.RM2.mean[i] = mean(tempdata$RM2.pes)
+        
+        CItest$LLpos.BN2[i] = quantile(tempdata$BN2.pos, probs = c(0.025,0.975))[1]
+        CItest$ULpos.BN2[i] = quantile(tempdata$BN2.pos, probs = c(0.025,0.975))[2]
+        CItest$pos.BN2.mean[i] = mean(tempdata$BN2.pos)
+        
+        i = i + 1
+ 
+        
+      } #close corloop
+    } #close sd loop
+  } #close level loop
+} #close N loop
+
+library(MBESS)
+library(psychometric)
+
+
+for (i in 1:nrow(CItest))
+{
+
+  #stuff = ci.R2(R2 = CItest$ges.RM1.mean[i], 
+  #                      df.1 = (CItest$levels[i]-1), 
+  #                      df.2 = (CItest$levels[i]-1)*(CItest$N[i]-1))  
+  #stuff2 = CI.Rsq(CItest$ges.RM1.mean[i], CItest$N[i], CItest$levels[i], level = 0.95)
+  #CItest$LLNC.ges.RM1[i] = stuff$Lower.Conf.Limit.R2
+  #CItest$ULNC.ges.RM1[i] = stuff$Upper.Conf.Limit.R2
+  #CItest$LLC.ges.RM1[i] = stuff2$LCL
+  #CItest$ULC.ges.RM1[i] = stuff2$UCL
+  
+  stuff = ci.R2(R2 = CItest$pes.RM1.mean[i], 
+                        df.1 = (CItest$levels[i]-1), 
+                        df.2 = (CItest$levels[i]-1)*(CItest$N[i]-1))  
+  stuff2 = CI.Rsq(CItest$pes.RM1.mean[i], CItest$N[i], CItest$levels[i], level = 0.95)
+  CItest$LLNC.pes.RM1[i] = stuff$Lower.Conf.Limit.R2
+  CItest$ULNC.pes.RM1[i] = stuff$Upper.Conf.Limit.R2
+  CItest$LLC.pes.RM1[i] = stuff2$LCL
+  CItest$ULC.pes.RM1[i] = stuff2$UCL
+  
+  z.pes.RM1 = 0.5*log((1+sqrt(CItest$pes.RM1.mean[i]))/(1-sqrt(CItest$pes.RM1.mean[i])))
+  se.z.pes.RM1 = 1 / sqrt(CItest$N[i] - 3)
+  CItest$LLZ.pes.RM1[i] = tanh(z.pes.RM1 - se.z.pes.RM1*qnorm(.025, lower.tail = F))^2
+  CItest$ULZ.pes.RM1[i] = tanh(z.pes.RM1 + se.z.pes.RM1*qnorm(.025, lower.tail = F))^2
+}
+
+#CItest$LLC.ges.RM1[CItest$LLC.ges.RM1 < 0] = 0
+#CItest$LLNC.ges.RM1[CItest$LLNC.ges.RM1 < 0] = 0
+CItest$LLC.pes.RM1[CItest$LLC.pes.RM1 < 0] = 0
+CItest$LLNC.pes.RM1[CItest$LLNC.pes.RM1 < 0] = 0
+
+##poster stuff
+##temp drop N levels
+CItest = subset(CItest, N == 26 | N == 50 | N == 104)
+round(tapply(CItest$LLpes.RM1, list(CItest$N, CItest$stdev), mean),3)
+round(tapply(CItest$ULpes.RM1, list(CItest$N, CItest$stdev), mean),3)
+
+round(tapply(CItest$LLpes.RM1, list(CItest$N, CItest$stdev), mean),3) - round(tapply(CItest$LLNC.pes.RM1, list(CItest$N, CItest$stdev), mean),3)
+
+round(tapply(CItest$ULpes.RM1, list(CItest$N, CItest$stdev), mean),3) - round(tapply(CItest$ULNC.pes.RM1, list(CItest$N, CItest$stdev), mean),3)
+
+round(tapply(CItest$LLpes.RM1, list(CItest$N, CItest$stdev), mean),3) - round(tapply(CItest$LLC.pes.RM1, list(CItest$N, CItest$stdev), mean),3)
+
+round(tapply(CItest$ULpes.RM1, list(CItest$N, CItest$stdev), mean),3) - round(tapply(CItest$ULC.pes.RM1, list(CItest$N, CItest$stdev), mean),3)
+
+round(tapply(CItest$LLpes.RM1, list(CItest$N, CItest$stdev), mean),3) - 
+round(tapply(CItest$LLZ.pes.RM1, list(CItest$N, CItest$stdev), mean),3)
+
+round(tapply(CItest$ULpes.RM1, list(CItest$N, CItest$stdev), mean),3) - round(tapply(CItest$ULZ.pes.RM1, list(CItest$N, CItest$stdev), mean),3)
+```
+
+
+## Participants
+
+## Material
+
+## Procedure
+
+# Results
+
+# Discussion
+
+
+\newpage
+
+# References
+
+\setlength{\parindent}{-0.5in}
+\setlength{\leftskip}{0.5in}

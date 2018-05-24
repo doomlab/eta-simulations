@@ -1,0 +1,111 @@
+---
+title: "BICratios"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Nagin (1999) details this procedure
+
+As an example, let's consider 4 competing models, each with a BIC value.
+
+```{r set}
+options(scipen=999)
+mone = -7325.26
+mtwo = -7289.52
+mthree = -7289.27
+mfour = -7292.54
+```
+
+In this example, BIC = log(L) - 0.5*log(n)*(k)
+This is a case where the maximum BIC would win (i.e. negative number closest to zero)
+
+To calculate the probability of a model being the correct model, you take the exponential of that model minus the model with the max BIC, divided by the summation of the exponential of all models minus max model
+
+```{r prob}
+sum = exp(mone-mthree)+exp(mtwo-mthree)+exp(mthree-mthree)+exp(mfour-mthree)
+p_one = exp(mone-mthree)/ sum
+p_two = exp(mtwo-mthree)/sum
+p_three = exp(mthree-mthree)/sum 
+p_four = exp(mfour-mthree)/sum
+
+p_one
+p_two
+p_three #highest probability
+p_four
+```
+
+We see that the third model has the highest probability of being the correct model, which is to be expected seeing that it has the max (closest to zero) BIC. 
+
+Then we can simply look at the odds ratio of one model compared to another, and use Jeffreys's Scale of Evidence for Bayes Factors
+
+For example, model three compared to model four is favored 26:1
+
+```{r probx}
+p_three/p_four
+```
+
+But the odds ratio in favor of p_three compared to p_two is more ambiguous, 1.28:1
+we can see that there is some ambiguity in the best model.
+
+```{r prob2}
+p_three/p_two
+```
+
+
+
+
+## Extending the BIC ratios to our case
+
+This is all good and dandy, but the fitdist function calculates BIC as:
+ -2*loglik+log(n)*(k)
+
+Where the lowest score wins (most negative BIC)
+
+So I was thinking about how this would work with the above example. Above, difference scores are calculated to show the degree to which one model is worse than the best model, expressed as a negative number. But since we are wanting to show the minimum, not the max as the best model, we need to take the difference score but keep the degree of difference as a negative number. E.g. 5-3 would be two, but if we just flip the sign we can report the difference as -2. Do you agree with this??
+
+This would lead to pretty much the same thing as above, but taking the exponential of the difference as a negative number. So in the case above, the first model would win.
+
+```{r neg}
+osum = exp(-(mone-mone)) + exp(-(mtwo-mone)) + exp(-(mthree-mone)) + exp(-(mfour-mone))
+op_one = exp(-(mone-mone))/osum
+op_two = exp(-(mtwo-mone))/osum
+op_three = exp(-(mthree-mone))/osum
+op_four = exp(-(mfour-mone))/osum
+
+op_one #1
+op_two 
+op_three 
+op_four 
+```
+
+
+If we changed the values to make it more ambiguous in our case (most negative wins), here is what I get, along with BF for model comparisons. I changed the values to be positive to show this works with numbers being pos and neg. I think?
+```{r ex}
+one = 100.37
+two = 100.75
+three = 103.65
+four = 105.22
+
+osum = exp(-(one-one)) + exp(-(two-one)) + exp(-(three-one)) + exp(-(four-one))
+op_one = exp(-(one-one))/osum
+op_two = exp(-(two-one))/osum
+op_three = exp(-(three-one))/osum
+op_four = exp(-(four-one))/osum
+
+op_one #1
+op_two  #2
+op_three #3
+op_four #4
+
+
+#OR one vs two
+op_one/op_two
+#OR one vs three
+op_one/op_three
+#OR one vs four
+op_one/op_four
+```
+
