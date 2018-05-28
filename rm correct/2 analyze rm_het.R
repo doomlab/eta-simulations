@@ -1,6 +1,6 @@
 setwd("~/OneDrive - Missouri State University/RESEARCH/2 projects/eta-sims/rm correct")
 
-master = read.csv("sim_rm_data.csv")
+master = read.csv("sim_rm_data_het.csv")
 master = master[ , -c(1)]
 
 ####calculate eta and partial eta squared####
@@ -86,6 +86,8 @@ master$NCP.etaUL[ is.na(master$NCP.etaUL) ] = 0
 master$NCP.pesLL[ is.na(master$NCP.pesLL) ] = 0
 master$NCP.pesUL[ is.na(master$NCP.pesUL) ] = 0
 
+master$RM1.gg >.75 & master$RM1.hf > .75
+
 ####calculate the GG corrected CI####
 master$cor.gesLL = (master$NCP.gesLL * master$RM1.gg) / (master$NCP.gesLL * master$RM1.gg + master$RM1.dfm + master$RM1.dfr + 1)
 master$cor.gesUL = (master$NCP.gesUL * master$RM1.gg) / (master$NCP.gesUL * master$RM1.gg + master$RM1.dfm + master$RM1.dfr + 1)
@@ -94,7 +96,7 @@ master$cor.etaUL = (master$NCP.etaUL * master$RM1.gg) / (master$NCP.etaUL * mast
 master$cor.pesLL = (master$NCP.pesLL * master$RM1.gg) / (master$NCP.pesLL * master$RM1.gg + master$RM1.dfm + master$RM1.dfr + 1)
 master$cor.pesUL = (master$NCP.pesUL * master$RM1.gg) / (master$NCP.pesUL * master$RM1.gg + master$RM1.dfm + master$RM1.dfr + 1)
 
-write.csv(master, "CI_master.csv", row.names = F)
+write.csv(master, "CI_master_het.csv", row.names = F)
 
 ####summarize the simulation rounds####
 mean_data = aggregate(master, by=list(master$N, master$levels, master$stdev, master$correl),
