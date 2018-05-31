@@ -20,6 +20,12 @@ master$etaLL = NA
 master$etaUL = NA
 master$pesLL = NA
 master$pesUL = NA
+master$gesLLF = NA
+master$gesULF = NA
+master$etaLLF = NA
+master$etaULF = NA
+master$pesLLF = NA
+master$pesULF = NA
 master$fakeF.ges = NA
 master$fakeF.eta = NA
 master$fakeF.pes = NA
@@ -32,6 +38,7 @@ master$NCP.pesUL = NA
 
 for (i in 1:nrow(master)){
 
+  ##calculate the CI based on R2
   master[ i , c("gesLL", "gesUL")] = ci.R2(R2 = master$RM1.ges[i],
                                            df.1 = master$RM1.dfm[i],
                                            df.2 = master$RM1.dfr[i],
@@ -47,7 +54,22 @@ for (i in 1:nrow(master)){
                                            df.2 = master$RM1.dfr[i],
                                            conf.level = .95)[c(1,3)]
   
-  ##apply a GG correction
+  ##calculate the CI based on real F only
+  master[ i , c("gesLLF", "gesULF")] = ci.R2(df.1 = master$RM1.dfm[i],
+                                           df.2 = master$RM1.dfr[i],
+                                           conf.level = .95,
+                                           F.value = master$RM1.F[i])[c(1,3)]  
+  
+  master[ i , c("etaLLF", "etaULF")] = ci.R2(df.1 = master$RM1.dfm[i],
+                                           df.2 = master$RM1.dfr[i],
+                                           conf.level = .95,
+                                           F.value = master$RM1.F[i])[c(1,3)]
+  
+  master[ i , c("pesLLF", "pesULF")] = ci.R2(df.1 = master$RM1.dfm[i],
+                                           df.2 = master$RM1.dfr[i],
+                                           conf.level = .95,
+                                           F.value = master$RM1.F[i])[c(1,3)]
+  
   ##first, calculate fake F
   master$fakeF.ges[i] = Rsquare2F(R2 = master$RM1.ges[i],
                                   df.1 = master$RM1.dfm[i],
@@ -61,6 +83,7 @@ for (i in 1:nrow(master)){
                                   df.1 = master$RM1.dfm[i],
                                   df.2 = master$RM1.dfr[i])
   
+  ##calculate NCP based on the fake F
   master[ i , c("NCP.gesLL", "NCP.gesUL")] = conf.limits.ncf(master$fakeF.ges[i], 
                                                            df.1 = master$RM1.dfm[i],
                                                            df.2 = master$RM1.dfr[i],
@@ -76,6 +99,8 @@ for (i in 1:nrow(master)){
                                                              df.2 = master$RM1.dfr[i],
                                                              conf.level = .95)[c(1,3)]
   
+  
+  
 }
 
 ####deal with the NAs in NCP, which MBESS lists as 0####
@@ -89,12 +114,20 @@ master$NCP.pesUL[ is.na(master$NCP.pesUL) ] = 0
 master$RM1.gg >.75 & master$RM1.hf > .75
 
 ####calculate the GG corrected CI####
-master$cor.gesLL = (master$NCP.gesLL * master$RM1.gg) / (master$NCP.gesLL * master$RM1.gg + master$RM1.dfm + master$RM1.dfr + 1)
-master$cor.gesUL = (master$NCP.gesUL * master$RM1.gg) / (master$NCP.gesUL * master$RM1.gg + master$RM1.dfm + master$RM1.dfr + 1)
-master$cor.etaLL = (master$NCP.etaLL * master$RM1.gg) / (master$NCP.etaLL * master$RM1.gg + master$RM1.dfm + master$RM1.dfr + 1)
-master$cor.etaUL = (master$NCP.etaUL * master$RM1.gg) / (master$NCP.etaUL * master$RM1.gg + master$RM1.dfm + master$RM1.dfr + 1)
-master$cor.pesLL = (master$NCP.pesLL * master$RM1.gg) / (master$NCP.pesLL * master$RM1.gg + master$RM1.dfm + master$RM1.dfr + 1)
-master$cor.pesUL = (master$NCP.pesUL * master$RM1.gg) / (master$NCP.pesUL * master$RM1.gg + master$RM1.dfm + master$RM1.dfr + 1)
+master$cor.gesLLgg = (master$NCP.gesLL * master$RM1.gg) / (master$NCP.gesLL * master$RM1.gg + master$RM1.dfm + master$RM1.dfr + 1)
+master$cor.gesULgg = (master$NCP.gesUL * master$RM1.gg) / (master$NCP.gesUL * master$RM1.gg + master$RM1.dfm + master$RM1.dfr + 1)
+master$cor.etaLLgg = (master$NCP.etaLL * master$RM1.gg) / (master$NCP.etaLL * master$RM1.gg + master$RM1.dfm + master$RM1.dfr + 1)
+master$cor.etaULgg = (master$NCP.etaUL * master$RM1.gg) / (master$NCP.etaUL * master$RM1.gg + master$RM1.dfm + master$RM1.dfr + 1)
+master$cor.pesLLgg = (master$NCP.pesLL * master$RM1.gg) / (master$NCP.pesLL * master$RM1.gg + master$RM1.dfm + master$RM1.dfr + 1)
+master$cor.pesULgg = (master$NCP.pesUL * master$RM1.gg) / (master$NCP.pesUL * master$RM1.gg + master$RM1.dfm + master$RM1.dfr + 1)
+
+####calculate the HF corrected CI####
+master$cor.gesLLhf = (master$NCP.gesLL * master$RM1.hf) / (master$NCP.gesLL * master$RM1.hf + master$RM1.dfm + master$RM1.dfr + 1)
+master$cor.gesULhf = (master$NCP.gesUL * master$RM1.hf) / (master$NCP.gesUL * master$RM1.hf + master$RM1.dfm + master$RM1.dfr + 1)
+master$cor.etaLLhf = (master$NCP.etaLL * master$RM1.hf) / (master$NCP.etaLL * master$RM1.hf + master$RM1.dfm + master$RM1.dfr + 1)
+master$cor.etaULhf = (master$NCP.etaUL * master$RM1.hf) / (master$NCP.etaUL * master$RM1.hf + master$RM1.dfm + master$RM1.dfr + 1)
+master$cor.pesLLhf = (master$NCP.pesLL * master$RM1.hf) / (master$NCP.pesLL * master$RM1.hf + master$RM1.dfm + master$RM1.dfr + 1)
+master$cor.pesULhf = (master$NCP.pesUL * master$RM1.hf) / (master$NCP.pesUL * master$RM1.hf + master$RM1.dfm + master$RM1.dfr + 1)
 
 write.csv(master, "CI_master_het.csv", row.names = F)
 
