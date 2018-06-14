@@ -258,6 +258,8 @@ server <- function(input,output) {
       samplesize = 1000
       bin = NA
       
+      graphdata = subset(graphdata, columntopull > 0)
+      
       CP = seq(min(graphdata[ , columntopull]), max(graphdata[ , columntopull]), .005)
       
       ##calculate the frequency of values you would expect from beta
@@ -291,11 +293,11 @@ server <- function(input,output) {
         cleanup +
         xlab("Effect Size") + 
         ylab("Frequency") +
-        annotate("text", x = CP1[last-20], y = 60, label = "– – Gamma", hjust = 0) +
-        annotate("text", x = CP1[last-20], y = 56, label = "-- Beta", hjust = 0) +
-        annotate("text", x = CP1[last-20], y = 52, label = "-. Normal", hjust = 0) +
-        annotate("text", x = CP1[last-20], y = 44, label = "Observed", hjust = 0, color = "red") + 
-        coord_cartesian(xlim = c(min(CP), max(CP)))
+        annotate("text", x = max(CP1)*.75, y = max(freqreal1)*.75, Inf, label = "– – Gamma") +
+        annotate("text", x = max(CP1)*.75, y = max(freqreal1)*.70, label = "-- Beta") +
+        annotate("text", x = max(CP1)*.75, y = max(freqreal1)*.65, label = "-. Normal") +
+        annotate("text", x = max(CP1)*.75, y = max(freqreal1)*.60, label = "Observed", color = "red") + 
+        coord_cartesian(xlim = c(min(CP1), max(CP1)))
       
       })
     
