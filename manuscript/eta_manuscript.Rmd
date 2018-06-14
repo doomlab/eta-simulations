@@ -1353,7 +1353,7 @@ normalraw = pnorm(CP, mean = normalmean, sd = normalsd)
 gammaraw = pgamma(CP, shape = gshape, rate = grate)
 
 for (i in 1:length(CP)){
-  bin[i] = sum(as.numeric(examplelarge$RM2.pes < CP[i]))
+  bin[i] = sum(as.numeric(examplelarge$RM1.pes < CP[i]))
   }
 
 last = length(pfraw)
