@@ -152,63 +152,106 @@ server <- function(input,output) {
       #figure out which column to use
       columntopull = paste(input$design, ".", input$effect_type, sep = "")
       #deal with the fact that these don't exist
-      if (columntopull == "RM1.pos") {columntopull = "RM1.fos"; input$effect_type = "fos"}
-      if (columntopull == "BN1.pos") {columntopull = "BN1.fos"; input$effect_type = "fos"}
+      if (columntopull == "RM1.pos") {columntopull = "RM1.fos"}
+      if (columntopull == "BN1.pos") {columntopull = "BN1.fos"}
         
       #figure out the distribution estimation information from runs
       if (input$effect_type == "fes") {
         
-        normalmean = fesdist$norm.1.mean[fesdist$levels == input$levels & fesdist$correl == input$correlation & fesdist$stdev == input$effect_size & fesdist$N == input$sample_size]
-        normalsd = fesdist$norm.1.sd[fesdist$levels == input$levels & fesdist$correl == input$correlation & fesdist$stdev == input$effect_size & fesdist$N == input$sample_size]
-        beta1 = fesdist$beta.1.shape1[fesdist$levels == input$levels & fesdist$correl == input$correlation & fesdist$stdev == input$effect_size & fesdist$N == input$sample_size]
-        beta2 = fesdist$beta.1.shape2[fesdist$levels == input$levels & fesdist$correl == input$correlation & fesdist$stdev == input$effect_size & fesdist$N == input$sample_size]
-        gshape = fesdist$gamma.1.shape[fesdist$levels == input$levels & fesdist$correl == input$correlation & fesdist$stdev == input$effect_size & fesdist$N == input$sample_size]
-        grate = fesdist$gamma.1.rate[fesdist$levels == input$levels & fesdist$correl == input$correlation & fesdist$stdev == input$effect_size & fesdist$N == input$sample_size]
+        if (grepl("1", columntopull)){
+          normalmean = fesdist$norm.1.mean[fesdist$levels == input$levels & fesdist$correl == input$correlation & fesdist$stdev == input$effect_size & fesdist$N == input$sample_size]
+          normalsd = fesdist$norm.1.sd[fesdist$levels == input$levels & fesdist$correl == input$correlation & fesdist$stdev == input$effect_size & fesdist$N == input$sample_size]
+          beta1 = fesdist$beta.1.shape1[fesdist$levels == input$levels & fesdist$correl == input$correlation & fesdist$stdev == input$effect_size & fesdist$N == input$sample_size]
+          beta2 = fesdist$beta.1.shape2[fesdist$levels == input$levels & fesdist$correl == input$correlation & fesdist$stdev == input$effect_size & fesdist$N == input$sample_size]
+          gshape = fesdist$gamma.1.shape[fesdist$levels == input$levels & fesdist$correl == input$correlation & fesdist$stdev == input$effect_size & fesdist$N == input$sample_size]
+          grate = fesdist$gamma.1.rate[fesdist$levels == input$levels & fesdist$correl == input$correlation & fesdist$stdev == input$effect_size & fesdist$N == input$sample_size]
+        }
+        
+        if (grepl("2", columntopull)){
+          normalmean = fesdist$norm.2.mean[fesdist$levels == input$levels & fesdist$correl == input$correlation & fesdist$stdev == input$effect_size & fesdist$N == input$sample_size]
+          normalsd = fesdist$norm.2.sd[fesdist$levels == input$levels & fesdist$correl == input$correlation & fesdist$stdev == input$effect_size & fesdist$N == input$sample_size]
+          beta1 = fesdist$beta.2.shape1[fesdist$levels == input$levels & fesdist$correl == input$correlation & fesdist$stdev == input$effect_size & fesdist$N == input$sample_size]
+          beta2 = fesdist$beta.2.shape2[fesdist$levels == input$levels & fesdist$correl == input$correlation & fesdist$stdev == input$effect_size & fesdist$N == input$sample_size]
+          gshape = fesdist$gamma.2.shape[fesdist$levels == input$levels & fesdist$correl == input$correlation & fesdist$stdev == input$effect_size & fesdist$N == input$sample_size]
+          grate = fesdist$gamma.2.rate[fesdist$levels == input$levels & fesdist$correl == input$correlation & fesdist$stdev == input$effect_size & fesdist$N == input$sample_size]
+        }
         
       }
       
       if (input$effect_type == "pes") {
+      
+        if (grepl("1", columntopull)){ 
+          normalmean = pesdist$norm.1.mean[pesdist$levels == input$levels & pesdist$correl == input$correlation & pesdist$stdev == input$effect_size & pesdist$N == input$sample_size]
+          normalsd = pesdist$norm.1.sd[pesdist$levels == input$levels & pesdist$correl == input$correlation & pesdist$stdev == input$effect_size & pesdist$N == input$sample_size]
+          beta1 = pesdist$beta.1.shape1[pesdist$levels == input$levels & pesdist$correl == input$correlation & pesdist$stdev == input$effect_size & pesdist$N == input$sample_size]
+          beta2 = pesdist$beta.1.shape2[pesdist$levels == input$levels & pesdist$correl == input$correlation & pesdist$stdev == input$effect_size & pesdist$N == input$sample_size]
+          gshape = pesdist$gamma.1.shape[pesdist$levels == input$levels & pesdist$correl == input$correlation & pesdist$stdev == input$effect_size & pesdist$N == input$sample_size]
+          grate = pesdist$gamma.1.rate[pesdist$levels == input$levels & pesdist$correl == input$correlation & pesdist$stdev == input$effect_size & pesdist$N == input$sample_size]
+        }
         
-        normalmean = pesdist$norm.1.mean[pesdist$levels == input$levels & pesdist$correl == input$correlation & pesdist$stdev == input$effect_size & pesdist$N == input$sample_size]
-        normalsd = pesdist$norm.1.sd[pesdist$levels == input$levels & pesdist$correl == input$correlation & pesdist$stdev == input$effect_size & pesdist$N == input$sample_size]
-        beta1 = pesdist$beta.1.shape1[pesdist$levels == input$levels & pesdist$correl == input$correlation & pesdist$stdev == input$effect_size & pesdist$N == input$sample_size]
-        beta2 = pesdist$beta.1.shape2[pesdist$levels == input$levels & pesdist$correl == input$correlation & pesdist$stdev == input$effect_size & pesdist$N == input$sample_size]
-        gshape = pesdist$gamma.1.shape[pesdist$levels == input$levels & pesdist$correl == input$correlation & pesdist$stdev == input$effect_size & pesdist$N == input$sample_size]
-        grate = pesdist$gamma.1.rate[pesdist$levels == input$levels & pesdist$correl == input$correlation & pesdist$stdev == input$effect_size & pesdist$N == input$sample_size]
-        
+        if (grepl("2", columntopull)){ 
+          normalmean = pesdist$norm.2.mean[pesdist$levels == input$levels & pesdist$correl == input$correlation & pesdist$stdev == input$effect_size & pesdist$N == input$sample_size]
+          normalsd = pesdist$norm.2.sd[pesdist$levels == input$levels & pesdist$correl == input$correlation & pesdist$stdev == input$effect_size & pesdist$N == input$sample_size]
+          beta1 = pesdist$beta.2.shape1[pesdist$levels == input$levels & pesdist$correl == input$correlation & pesdist$stdev == input$effect_size & pesdist$N == input$sample_size]
+          beta2 = pesdist$beta.2.shape2[pesdist$levels == input$levels & pesdist$correl == input$correlation & pesdist$stdev == input$effect_size & pesdist$N == input$sample_size]
+          gshape = pesdist$gamma.2.shape[pesdist$levels == input$levels & pesdist$correl == input$correlation & pesdist$stdev == input$effect_size & pesdist$N == input$sample_size]
+          grate = pesdist$gamma.2.rate[pesdist$levels == input$levels & pesdist$correl == input$correlation & pesdist$stdev == input$effect_size & pesdist$N == input$sample_size]
+        }
       }
+      
       
       if (input$effect_type == "fos") {
         
-        normalmean = fosdist$norm.1.mean[fosdist$levels == input$levels & fosdist$correl == input$correlation & fosdist$stdev == input$effect_size & fosdist$N == input$sample_size]
-        normalsd = fosdist$norm.1.sd[fosdist$levels == input$levels & fosdist$correl == input$correlation & fosdist$stdev == input$effect_size & fosdist$N == input$sample_size]
-        beta1 = fosdist$beta.1.shape1[fosdist$levels == input$levels & fosdist$correl == input$correlation & fosdist$stdev == input$effect_size & fosdist$N == input$sample_size]
-        beta2 = fosdist$beta.1.shape2[fosdist$levels == input$levels & fosdist$correl == input$correlation & fosdist$stdev == input$effect_size & fosdist$N == input$sample_size]
-        gshape = fosdist$gamma.1.shape[fosdist$levels == input$levels & fosdist$correl == input$correlation & fosdist$stdev == input$effect_size & fosdist$N == input$sample_size]
-        grate = fosdist$gamma.1.rate[fosdist$levels == input$levels & fosdist$correl == input$correlation & fosdist$stdev == input$effect_size & fosdist$N == input$sample_size]
+        if (grepl("1", columntopull)){ 
+          normalmean = fosdist$norm.1.mean[fosdist$levels == input$levels & fosdist$correl == input$correlation & fosdist$stdev == input$effect_size & fosdist$N == input$sample_size]
+          normalsd = fosdist$norm.1.sd[fosdist$levels == input$levels & fosdist$correl == input$correlation & fosdist$stdev == input$effect_size & fosdist$N == input$sample_size]
+          beta1 = fosdist$beta.1.shape1[fosdist$levels == input$levels & fosdist$correl == input$correlation & fosdist$stdev == input$effect_size & fosdist$N == input$sample_size]
+          beta2 = fosdist$beta.1.shape2[fosdist$levels == input$levels & fosdist$correl == input$correlation & fosdist$stdev == input$effect_size & fosdist$N == input$sample_size]
+          gshape = fosdist$gamma.1.shape[fosdist$levels == input$levels & fosdist$correl == input$correlation & fosdist$stdev == input$effect_size & fosdist$N == input$sample_size]
+          grate = fosdist$gamma.1.rate[fosdist$levels == input$levels & fosdist$correl == input$correlation & fosdist$stdev == input$effect_size & fosdist$N == input$sample_size]
+        }
+
+        if (grepl("2", columntopull)){ 
+          normalmean = fosdist$norm.2.mean[fosdist$levels == input$levels & fosdist$correl == input$correlation & fosdist$stdev == input$effect_size & fosdist$N == input$sample_size]
+          normalsd = fosdist$norm.2.sd[fosdist$levels == input$levels & fosdist$correl == input$correlation & fosdist$stdev == input$effect_size & fosdist$N == input$sample_size]
+          beta1 = fosdist$beta.2.shape1[fosdist$levels == input$levels & fosdist$correl == input$correlation & fosdist$stdev == input$effect_size & fosdist$N == input$sample_size]
+          beta2 = fosdist$beta.2.shape2[fosdist$levels == input$levels & fosdist$correl == input$correlation & fosdist$stdev == input$effect_size & fosdist$N == input$sample_size]
+          gshape = fosdist$gamma.2.shape[fosdist$levels == input$levels & fosdist$correl == input$correlation & fosdist$stdev == input$effect_size & fosdist$N == input$sample_size]
+          grate = fosdist$gamma.2.rate[fosdist$levels == input$levels & fosdist$correl == input$correlation & fosdist$stdev == input$effect_size & fosdist$N == input$sample_size]
+        }
         
       }
       
       if (input$effect_type == "pos") {
-       
-        normalmean = posdist$norm.1.mean[posdist$levels == input$levels & posdist$correl == input$correlation & posdist$stdev == input$effect_size & posdist$N == input$sample_size]
-        normalsd = posdist$norm.1.sd[posdist$levels == input$levels & posdist$correl == input$correlation & posdist$stdev == input$effect_size & posdist$N == input$sample_size]
-        beta1 = posdist$beta.1.shape1[posdist$levels == input$levels & posdist$correl == input$correlation & posdist$stdev == input$effect_size & posdist$N == input$sample_size]
-        beta2 = posdist$beta.1.shape2[posdist$levels == input$levels & posdist$correl == input$correlation & posdist$stdev == input$effect_size & posdist$N == input$sample_size]
-        gshape = posdist$gamma.1.shape[posdist$levels == input$levels & posdist$correl == input$correlation & posdist$stdev == input$effect_size & posdist$N == input$sample_size]
-        grate = posdist$gamma.1.rate[posdist$levels == input$levels & posdist$correl == input$correlation & posdist$stdev == input$effect_size & posdist$N == input$sample_size]
+       ##only has 2s
+        normalmean = posdist$norm.2.mean[posdist$levels == input$levels & posdist$correl == input$correlation & posdist$stdev == input$effect_size & posdist$N == input$sample_size]
+        normalsd = posdist$norm.2.sd[posdist$levels == input$levels & posdist$correl == input$correlation & posdist$stdev == input$effect_size & posdist$N == input$sample_size]
+        beta1 = posdist$beta.2.shape1[posdist$levels == input$levels & posdist$correl == input$correlation & posdist$stdev == input$effect_size & posdist$N == input$sample_size]
+        beta2 = posdist$beta.2.shape2[posdist$levels == input$levels & posdist$correl == input$correlation & posdist$stdev == input$effect_size & posdist$N == input$sample_size]
+        gshape = posdist$gamma.2.shape[posdist$levels == input$levels & posdist$correl == input$correlation & posdist$stdev == input$effect_size & posdist$N == input$sample_size]
+        grate = posdist$gamma.2.rate[posdist$levels == input$levels & posdist$correl == input$correlation & posdist$stdev == input$effect_size & posdist$N == input$sample_size]
         
       }
       
       if (input$effect_type == "ges") {
         
-        normalmean = gesdist$norm.1.mean[gesdist$levels == input$levels & gesdist$correl == input$correlation & gesdist$stdev == input$effect_size & gesdist$N == input$sample_size]
-        normalsd = gesdist$norm.1.sd[gesdist$levels == input$levels & gesdist$correl == input$correlation & gesdist$stdev == input$effect_size & gesdist$N == input$sample_size]
-        beta1 = gesdist$beta.1.shape1[gesdist$levels == input$levels & gesdist$correl == input$correlation & gesdist$stdev == input$effect_size & gesdist$N == input$sample_size]
-        beta2 = gesdist$beta.1.shape2[gesdist$levels == input$levels & gesdist$correl == input$correlation & gesdist$stdev == input$effect_size & gesdist$N == input$sample_size]
-        gshape = gesdist$gamma.1.shape[gesdist$levels == input$levels & gesdist$correl == input$correlation & gesdist$stdev == input$effect_size & gesdist$N == input$sample_size]
-        grate = gesdist$gamma.1.rate[gesdist$levels == input$levels & gesdist$correl == input$correlation & gesdist$stdev == input$effect_size & gesdist$N == input$sample_size]
+        if (grepl("1", columntopull)){ 
+          normalmean = gesdist$norm.1.mean[gesdist$levels == input$levels & gesdist$correl == input$correlation & gesdist$stdev == input$effect_size & gesdist$N == input$sample_size]
+          normalsd = gesdist$norm.1.sd[gesdist$levels == input$levels & gesdist$correl == input$correlation & gesdist$stdev == input$effect_size & gesdist$N == input$sample_size]
+          beta1 = gesdist$beta.1.shape1[gesdist$levels == input$levels & gesdist$correl == input$correlation & gesdist$stdev == input$effect_size & gesdist$N == input$sample_size]
+          beta2 = gesdist$beta.1.shape2[gesdist$levels == input$levels & gesdist$correl == input$correlation & gesdist$stdev == input$effect_size & gesdist$N == input$sample_size]
+          gshape = gesdist$gamma.1.shape[gesdist$levels == input$levels & gesdist$correl == input$correlation & gesdist$stdev == input$effect_size & gesdist$N == input$sample_size]
+          grate = gesdist$gamma.1.rate[gesdist$levels == input$levels & gesdist$correl == input$correlation & gesdist$stdev == input$effect_size & gesdist$N == input$sample_size]
+        }
         
+        if (grepl("2", columntopull)){ 
+          normalmean = gesdist$norm.2.mean[gesdist$levels == input$levels & gesdist$correl == input$correlation & gesdist$stdev == input$effect_size & gesdist$N == input$sample_size]
+          normalsd = gesdist$norm.2.sd[gesdist$levels == input$levels & gesdist$correl == input$correlation & gesdist$stdev == input$effect_size & gesdist$N == input$sample_size]
+          beta1 = gesdist$beta.2.shape1[gesdist$levels == input$levels & gesdist$correl == input$correlation & gesdist$stdev == input$effect_size & gesdist$N == input$sample_size]
+          beta2 = gesdist$beta.2.shape2[gesdist$levels == input$levels & gesdist$correl == input$correlation & gesdist$stdev == input$effect_size & gesdist$N == input$sample_size]
+          gshape = gesdist$gamma.2.shape[gesdist$levels == input$levels & gesdist$correl == input$correlation & gesdist$stdev == input$effect_size & gesdist$N == input$sample_size]
+          grate = gesdist$gamma.2.rate[gesdist$levels == input$levels & gesdist$correl == input$correlation & gesdist$stdev == input$effect_size & gesdist$N == input$sample_size]
+        }
       }
       
       binsize = .005
