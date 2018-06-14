@@ -169,7 +169,7 @@ server <- function(input,output) {
         
         if (grepl("2", columntopull)){
           normalmean = fesdist$norm.2.mean[fesdist$levels == input$levels & fesdist$correl == input$correlation & fesdist$stdev == input$effect_size & fesdist$N == input$sample_size]
-          normalsd = fesdist$norm.2.sd[fesdist$levels == input$levels & fesdist$correl == input$correlation & fesdist$stdev == input$effect_size & fesdist$N == input$sample_size]
+          normalsd = fesdist$norm.2.stdev[fesdist$levels == input$levels & fesdist$correl == input$correlation & fesdist$stdev == input$effect_size & fesdist$N == input$sample_size]
           beta1 = fesdist$beta.2.shape1[fesdist$levels == input$levels & fesdist$correl == input$correlation & fesdist$stdev == input$effect_size & fesdist$N == input$sample_size]
           beta2 = fesdist$beta.2.shape2[fesdist$levels == input$levels & fesdist$correl == input$correlation & fesdist$stdev == input$effect_size & fesdist$N == input$sample_size]
           gshape = fesdist$gamma.2.shape[fesdist$levels == input$levels & fesdist$correl == input$correlation & fesdist$stdev == input$effect_size & fesdist$N == input$sample_size]
@@ -191,7 +191,7 @@ server <- function(input,output) {
         
         if (grepl("2", columntopull)){ 
           normalmean = pesdist$norm.2.mean[pesdist$levels == input$levels & pesdist$correl == input$correlation & pesdist$stdev == input$effect_size & pesdist$N == input$sample_size]
-          normalsd = pesdist$norm.2.sd[pesdist$levels == input$levels & pesdist$correl == input$correlation & pesdist$stdev == input$effect_size & pesdist$N == input$sample_size]
+          normalsd = pesdist$norm.2.stdev[pesdist$levels == input$levels & pesdist$correl == input$correlation & pesdist$stdev == input$effect_size & pesdist$N == input$sample_size]
           beta1 = pesdist$beta.2.shape1[pesdist$levels == input$levels & pesdist$correl == input$correlation & pesdist$stdev == input$effect_size & pesdist$N == input$sample_size]
           beta2 = pesdist$beta.2.shape2[pesdist$levels == input$levels & pesdist$correl == input$correlation & pesdist$stdev == input$effect_size & pesdist$N == input$sample_size]
           gshape = pesdist$gamma.2.shape[pesdist$levels == input$levels & pesdist$correl == input$correlation & pesdist$stdev == input$effect_size & pesdist$N == input$sample_size]
@@ -213,7 +213,7 @@ server <- function(input,output) {
 
         if (grepl("2", columntopull)){ 
           normalmean = fosdist$norm.2.mean[fosdist$levels == input$levels & fosdist$correl == input$correlation & fosdist$stdev == input$effect_size & fosdist$N == input$sample_size]
-          normalsd = fosdist$norm.2.sd[fosdist$levels == input$levels & fosdist$correl == input$correlation & fosdist$stdev == input$effect_size & fosdist$N == input$sample_size]
+          normalsd = fosdist$norm.2.stdev[fosdist$levels == input$levels & fosdist$correl == input$correlation & fosdist$stdev == input$effect_size & fosdist$N == input$sample_size]
           beta1 = fosdist$beta.2.shape1[fosdist$levels == input$levels & fosdist$correl == input$correlation & fosdist$stdev == input$effect_size & fosdist$N == input$sample_size]
           beta2 = fosdist$beta.2.shape2[fosdist$levels == input$levels & fosdist$correl == input$correlation & fosdist$stdev == input$effect_size & fosdist$N == input$sample_size]
           gshape = fosdist$gamma.2.shape[fosdist$levels == input$levels & fosdist$correl == input$correlation & fosdist$stdev == input$effect_size & fosdist$N == input$sample_size]
@@ -225,7 +225,7 @@ server <- function(input,output) {
       if (input$effect_type == "pos") {
        ##only has 2s
         normalmean = posdist$norm.2.mean[posdist$levels == input$levels & posdist$correl == input$correlation & posdist$stdev == input$effect_size & posdist$N == input$sample_size]
-        normalsd = posdist$norm.2.sd[posdist$levels == input$levels & posdist$correl == input$correlation & posdist$stdev == input$effect_size & posdist$N == input$sample_size]
+        normalsd = posdist$norm.2.stdev[posdist$levels == input$levels & posdist$correl == input$correlation & posdist$stdev == input$effect_size & posdist$N == input$sample_size]
         beta1 = posdist$beta.2.shape1[posdist$levels == input$levels & posdist$correl == input$correlation & posdist$stdev == input$effect_size & posdist$N == input$sample_size]
         beta2 = posdist$beta.2.shape2[posdist$levels == input$levels & posdist$correl == input$correlation & posdist$stdev == input$effect_size & posdist$N == input$sample_size]
         gshape = posdist$gamma.2.shape[posdist$levels == input$levels & posdist$correl == input$correlation & posdist$stdev == input$effect_size & posdist$N == input$sample_size]
@@ -246,7 +246,7 @@ server <- function(input,output) {
         
         if (grepl("2", columntopull)){ 
           normalmean = gesdist$norm.2.mean[gesdist$levels == input$levels & gesdist$correl == input$correlation & gesdist$stdev == input$effect_size & gesdist$N == input$sample_size]
-          normalsd = gesdist$norm.2.sd[gesdist$levels == input$levels & gesdist$correl == input$correlation & gesdist$stdev == input$effect_size & gesdist$N == input$sample_size]
+          normalsd = gesdist$norm.2.stdev[gesdist$levels == input$levels & gesdist$correl == input$correlation & gesdist$stdev == input$effect_size & gesdist$N == input$sample_size]
           beta1 = gesdist$beta.2.shape1[gesdist$levels == input$levels & gesdist$correl == input$correlation & gesdist$stdev == input$effect_size & gesdist$N == input$sample_size]
           beta2 = gesdist$beta.2.shape2[gesdist$levels == input$levels & gesdist$correl == input$correlation & gesdist$stdev == input$effect_size & gesdist$N == input$sample_size]
           gshape = gesdist$gamma.2.shape[gesdist$levels == input$levels & gesdist$correl == input$correlation & gesdist$stdev == input$effect_size & gesdist$N == input$sample_size]
