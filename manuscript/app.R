@@ -291,10 +291,10 @@ server <- function(input,output) {
         cleanup +
         xlab("Effect Size") + 
         ylab("Frequency") +
-        annotate("text", x = max(CP)-.1, y = 60, label = "– – Gamma", hjust = 0) +
-        annotate("text", x = max(CP)-.1, y = 56, label = "-- Beta", hjust = 0) +
-        annotate("text", x = max(CP)-.1, y = 52, label = "-. Normal", hjust = 0) +
-        annotate("text", x = max(CP)-.1, y = 44, label = "Observed", hjust = 0, color = "red") + 
+        annotate("text", x = CP1[last-20], y = 60, label = "– – Gamma", hjust = 0) +
+        annotate("text", x = CP1[last-20], y = 56, label = "-- Beta", hjust = 0) +
+        annotate("text", x = CP1[last-20], y = 52, label = "-. Normal", hjust = 0) +
+        annotate("text", x = CP1[last-20], y = 44, label = "Observed", hjust = 0, color = "red") + 
         coord_cartesian(xlim = c(min(CP), max(CP)))
       
       })
