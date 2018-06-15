@@ -93,7 +93,7 @@ ui <- fluidPage(
                              "One-Way Between Subjects" = "BN1",
                              "Two-Way Repeated Measures" = "RM2",
                              "Two-Way Between Subjects" = "BN2"),
-                           selected = "owrm"),
+                           selected = "RM1"),
                
                selectInput("effect_type", "Type of Effect Size:",
                            c("Full Eta-Squared" = "fes",
@@ -285,7 +285,7 @@ server <- function(input,output) {
       freqdata = cbind.data.frame("freqb1" = freqb, CP1, "freqnorm1" = freqnorm, 
                                   "freqgamma1" = freqgamma, "freqreal1" = freqreal)   
       
-      ggplot(freqdata, aes(CP1, freqreal1)) +
+      ggplot(freqdata, aes(CP, freqreal)) +
         geom_line(data = freqdata, aes(x = CP1, y = freqreal1), color = "red", linetype = "solid") +
         geom_line(data = freqdata, aes(x = CP1, y = freqb1), linetype = "dashed") + 
         geom_line(data = freqdata, aes(x = CP1, y = freqnorm1), linetype = "dotdash") +
@@ -293,10 +293,10 @@ server <- function(input,output) {
         cleanup +
         xlab("Effect Size") + 
         ylab("Frequency") +
-        annotate("text", x = max(CP1)*.75, y = max(freqreal1)*.75, Inf, label = "– – Gamma") +
-        annotate("text", x = max(CP1)*.75, y = max(freqreal1)*.70, label = "-- Beta") +
-        annotate("text", x = max(CP1)*.75, y = max(freqreal1)*.65, label = "-. Normal") +
-        annotate("text", x = max(CP1)*.75, y = max(freqreal1)*.60, label = "Observed", color = "red") + 
+        annotate("text", x = max(CP1)*.75, y = max(freqdata$freqreal1)*.75, hjust = 0, label = "– – Gamma") +
+        annotate("text", x = max(CP1)*.75, y = max(freqdata$freqreal1)*.65, hjust = 0, label = "-- Beta") +
+        annotate("text", x = max(CP1)*.75, y = max(freqdata$freqreal1)*.55, hjust = 0, label = "-. Normal") +
+        annotate("text", x = max(CP1)*.75, y = max(freqdata$freqreal1)*.45, hjust = 0, label = "Observed", color = "red") + 
         coord_cartesian(xlim = c(min(CP1), max(CP1)))
       
       })
