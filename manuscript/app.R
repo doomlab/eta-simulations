@@ -11,7 +11,7 @@ cleanup = theme(panel.grid.major = element_blank(),
                 text = element_text(size = 13))
 
 ####load data####
-master = read.csv("fulldata.csv")
+fulldata = read.csv("fulldata.csv")
 fesdist = read.csv("fes_distribution.csv")
 fosdist = read.csv("fos_distribution.csv")
 gesdist = read.csv("ges_distribution.csv")
@@ -285,7 +285,7 @@ server <- function(input,output) {
       freqdata = cbind.data.frame("freqb1" = freqb, CP1, "freqnorm1" = freqnorm, 
                                   "freqgamma1" = freqgamma, "freqreal1" = freqreal)   
       
-      ggplot(freqdata, aes(CP1, freqreal)) +
+      ggplot(freqdata, aes(CP1, freqreal1)) +
         geom_line(data = freqdata, aes(x = CP1, y = freqreal1), color = "red", linetype = "solid") +
         geom_line(data = freqdata, aes(x = CP1, y = freqb1), linetype = "dashed") + 
         geom_line(data = freqdata, aes(x = CP1, y = freqnorm1), linetype = "dotdash") +
