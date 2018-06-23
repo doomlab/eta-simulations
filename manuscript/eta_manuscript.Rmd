@@ -1,16 +1,29 @@
 ---
+<<<<<<< HEAD
 title             : "The title"
 shorttitle        : "VARIANCE OVERLAP"
+=======
+title             : "Distributions and Sampling Variance for Five Effect Size Measures of Variance Overlap"
+shorttitle        : "Distributions and Sampling Variance"
+>>>>>>> cf19dca9a9b10819b414e4acdd99d132b7cc9697
 
 author: 
   - name          : "Erin M. Buchanan"
     affiliation   : "1"
     corresponding : yes    # Define only one corresponding author
+<<<<<<< HEAD
     address       : "901 S. National Ave., Springfield, MO, 65897"
     email         : "erinbuchanan@missouristate.edu"
   - name          : "John E. Scofield"
     affiliation   : "2"
   - name          : "Arielle Cunningham"
+=======
+    address       : "901 S National, Springfield, MO, 65897"
+    email         : "erinbuchanan@missouristate.edu"
+  - name          : "John E. Scofield"
+    affiliation   : "2"
+  - name          : "Ari Cunningham"
+>>>>>>> cf19dca9a9b10819b414e4acdd99d132b7cc9697
     affiliation   : "1"
 
 affiliation:
@@ -20,10 +33,15 @@ affiliation:
     institution   : "University of Missouri"
 
 author_note: |
+<<<<<<< HEAD
   Erin M. Buchanan is an Associate Professor of Quantitative Psychology at Missouri State University. John E. Scofield is a Ph.D. candidate in Cognitive Neuroscience at the University of Missouri. Arielle Cunningham is a masters candidate in the Experimental Psychology program at Missouri State University. 
+=======
+  Erin M. Buchanan, Department of Psychology, Missouri State University; John E. Scofield, Department of Psychological Sciences, University of Missouri. Ari Cunningham, Department of Psychology, Missouri State University. All authors contributed equally to the creation of all parts of this manuscript. 
+>>>>>>> cf19dca9a9b10819b414e4acdd99d132b7cc9697
 
 abstract: |
-  Enter abstract here. Each new line herein must be indented, like this line.
+
+
   
 keywords          : "effect size, eta, omega, distribution, variance"
 
@@ -44,14 +62,16 @@ output            : papaja::apa6_pdf
 library("papaja")
 ```
 
-effect size
-- what is effect size
-- why should we care about it
-- what are the types of effect sizes
+  Effect size measures play an integral role in the interpretation of empirical science, and are arguably one of the most important outcomes of inference testing [@Lakens2013]. Given an experimental manipulation, or an association between variables of interest, effect sizes yield a quantitative measure of the magnitude, strength, or importance of an effect [@Keppel2004; @Olejnik2003]. This is complementary to traditional null hypothesis significance testing (NHST), which cannot elucidate the size or importance of an effect of interest. While @Kirk2003 has noted the development of more than seventy effect size indices, the characteristics of many effect sizes still warrant further study.
+  
+  The majority of common effect size measures can be binned into two families: the *d* family, and the *r* family. The first, *d* type effect sizes, consist of mean differences between two groups [@Lakens2013; @Rosenthal1994]. These are often standardized (as with the popular Cohen's *d*). The *r* family deals with measures of association, or the amount of variance overlap. Variance overlap effect sizes are interpreted as proportions, which range from zero to one [@Maxwell2004]. Common examples of this type include eta squared, epsilon squared, and omega squared [@Hays1963; @Kelley1935; @Olejnik2000; @Pearson1905], which often accompany omnibus tests such as an analysis of variance (ANOVA). Effect sizes have been known to overestimate population effects. Eta squared has been shown to have a positive bias [@Olejnik2003; @Okada2013), resulting from its dependence with least-squares methods related to *t*-tests and ANOVA designs. Less biased versions such as omega squared and epsilon squared have been suggested, albeit are not bias free [@Okada2013; @Okada2016).
 
-limitations
-- known problems with effect size (bias)
-- variance and meta-analyses rely on these things but we don't know squat about how these work
+  Alongside inference testing, effect sizes are critical to a priori power analyses, as well as meta-analyses [@Keppel2004]. With the use of effect size indices, researchers can make better inferences about the magnitude and direction of effects in a given field of research. However, researchers need to address comparability problems associated with different types of effect size measures, as meta-analyses can be inconclusive unless the type of research design is considered and controlled for [@Okada2016]. Effect sizes can also be used from prior research when planning new studies. A-priori power analyses can provide suggested sample sizes given an effect in a field of research [@Lakens2013]. 
+  
+  While effect sizes from the *d* family have been well studied, and bias estimates have been of interest with variance overlap effect sizes, the distribution of common effect sizes have been relatively understudied, as most researchers assume they match the distribution of the test statistic. Therefore, *d* values are often calculated with *t*-tests because the formulas are mathematically similar (as *d* usually is only a transform of *t* by removing the square root of *N*). However, several researchers have shown that the distribution of *d* is not normal, and actually follows a non-central *t* distribution, even as the central limit theorem approximates normal for the sampling distribution of *t*.
+  
+  This study focuses on several related measures of variance overlap that are traditionally paired with ANOVA (linear models). Given that the calculation of confidence intervals should not be based on the normal approximation, and that meta-analytic techniques requiring variance estimation of effect size sampling distributions have been relatively unexplored, we utilized simulations to explore this topic. We first explore the distributions of five effect size measures of variance overlap, then explore the simulation of confidence intervals, and finally look at the simulation of sampling variances of effect size measures.
+
 
 # Method
 
