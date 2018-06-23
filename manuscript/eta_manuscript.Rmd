@@ -1,34 +1,33 @@
 ---
 title             : "The title"
-shorttitle        : "Title"
+shorttitle        : "VARIANCE OVERLAP"
 
 author: 
-  - name          : "First Author"
+  - name          : "Erin M. Buchanan"
     affiliation   : "1"
     corresponding : yes    # Define only one corresponding author
-    address       : "Postal address"
-    email         : "my@email.com"
-  - name          : "Ernst-August Doelle"
-    affiliation   : "1,2"
+    address       : "901 S. National Ave., Springfield, MO, 65897"
+    email         : "erinbuchanan@missouristate.edu"
+  - name          : "John E. Scofield"
+    affiliation   : "2"
+  - name          : "Arielle Cunningham"
+    affiliation   : "1"
 
 affiliation:
   - id            : "1"
-    institution   : "Wilhelm-Wundt-University"
+    institution   : "Missouri State University"
   - id            : "2"
-    institution   : "Konstanz Business School"
+    institution   : "University of Missouri"
 
 author_note: |
-  Add complete departmental affiliations for each author here. Each new line herein must be indented, like this line.
-
-  Enter author note here.
+  Erin M. Buchanan is an Associate Professor of Quantitative Psychology at Missouri State University. John E. Scofield is a Ph.D. candidate in Cognitive Neuroscience at the University of Missouri. Arielle Cunningham is a masters candidate in the Experimental Psychology program at Missouri State University. 
 
 abstract: |
   Enter abstract here. Each new line herein must be indented, like this line.
   
-keywords          : "keywords"
-wordcount         : "X"
+keywords          : "effect size, eta, omega, distribution, variance"
 
-bibliography      : ["r-references.bib"]
+#bibliography      : ["r-references.bib"]
 
 figsintext        : no
 figurelist        : no
@@ -57,15 +56,17 @@ limitations
 # Method
 
 ## Simulations
-talk about all the variables and stuff here
-formulas
-manipulated variables = 
-- sample size
-- design type
-- effect size type
-- effect size size
-- correlation
-- levels
+
+The focus of this study was commonly used variance overlap statistics and the following were calculated for each combination of the manipulated variables when appropriate: 1) $\eta^2$, 2) $\eta_p^2$, 3) $\omega^2$, 4) $\omega_p^2$, and 5) $\eta_G^2$. A complete formula sheet of the equations used to calculate these statistics can be found in our supplemental materials.  
+
+The manipulated variables included sample size, study design type, effect size strength, correlation between levels, and number of levels. We generated datasets for each of the variable combinations by using the *mvtnorm* package in *R* [@Genz2017]. The data generated from this function are multivariate normal with specified variance and correlation between levels. The data was generated with mean values starting at *M* = 2.50 and increasing 0.50 points based on the number of levels (i.e., 2.50, 3.00, etc.). In order to simulate data a researcher might collect from participants, this data was transformed into Likert-style data by rounding to whole numbers and truncating data points to a one to seven range. To understand the effects of this procedure on effect sizes, please see @CITE-BIAS1. The emphasis in this paper is on the distribution of the effects, rather than effect size bias, and therefore, we wished to simulate a common set of data, as randomly generated data is often precise to 16 decimals, which is rarely true for data collected from human participants. Even when data is rounded, skew values still closely resembled a normal distribution.
+
+Level sample size started at *n* = 20 and increased by *n* = 6 up to *n* = 110 participants. Between and within-subjects designs were simulated, include one- and two-way scenarios. The data was first generated at *n* per level. For the one-way designs, the levels were either analyzed as between or within subjects using the *ez* library with type three sum of squares [@Lawrence2017]. The two-way designs were created by generating a random set of *n* $\times$ levels data points and adding them to original data as a second independent variable. This variable was treated as either between or within subjects to create two-way designs (all between or within), and the original variable was treated as the variable of interest in the two-way design (i.e., effect sizes were not calculated for the random variable or the interaction). This procedure ensured that *n* per level was consistent across all simulations, although total *n* did increase for between-subject designs. 
+
+Effect size strength was manipulated by changing the simulated variance per level small effects: $SD_^2$ = 5, medium effects: $SD^2$ = 3, and large effects: $SD^2$ = 1. The correlations between levels included the following values: 0, .1, .3, .5, .7, and .9. Last, the number of levels was manipluated at 3, 4, 5, and 6 levels. In total, 1152 cobminations (16 *n* by 3 effect size strength by 6 correlations by 4 levels) were simulated 1000 times each, resulting in nearly 1.2 million lines of data. The dataset was coded for manipulatd variables and includes degrees of freedom (df), sum of squares (SS), 
+*F* values, *p* values, and $eta_G^2$ for each design combination, which is provided online. Therefore, across 1.2 million simulations, nearly 23 million effect sizes were generated (1.2 by 4 designs by 5 effect size measures). Not all values are investigated here, as many were nearly identical, but the Shiny application provided for visualization purposes allows any interested person to view each combination individually. Additionally, we used the *papaja* package to write this manuscript inline with our *R* syntax for transparency of procedure [@Aust2017]. 
+
+NEED TO MAKE FORMULA SHEET 
 
 ```{r simulation-code, eval=FALSE, include=FALSE}
 ####simulations for data####
@@ -76,14 +77,14 @@ library(reshape)
 ##        method=c("eigen", "svd", "chol"), pre0.9_9994 = FALSE)
 
 ####things to simulate####
-##rotate around N values start at 20 in each level, then add 5 as you go
+##rotate around N values start at 20 in each level, then add 6 as you go
 ##keep means steady 2.5, 3, 3.5, etc.
 ##rotate around the number of levels 3-6
 ##rotate around SDs making eta small medium large
 ##rotate around correlated error 0, .1, 3., .5, .7, .9
 
 ####create blank data from for data####
-totalsims = 1224*1000
+totalsims = 1152*1000
 mydata = data.frame(N = 1:totalsims)
 
 ####keep track of the simulation rounds####
@@ -91,7 +92,7 @@ round = 0
 
 ####loop over N values here####
 ##loop a
-Nloops = seq(20, 100, 6)
+Nloops = seq(20, 110, 6)
 for (a in 1:length(Nloops)) {
   
 simulate = 0
@@ -362,8 +363,6 @@ cor(justes[ , 6:10]) ##rm1, rm2, mix versus bn1/bn2 PES
 cor(justes[ , 11:15]) ##rm1, mix, bn1, bn2 versus rm2 FES
 cor(justes[ , 16:20]) ##rm1, mix, bn1, bn2 versus rm2 FOS
 cor(justes[ , 21:23]) ##all perfectly correlated, use RM2 POS
-
-options(scipen = 999)
 
 fulldata$popeta = NA
 fulldata$popeta[ fulldata$levels == 3 & fulldata$stdev == 5] = 0.03225806
