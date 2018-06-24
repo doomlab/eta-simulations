@@ -1,43 +1,24 @@
 ---
-<<<<<<< HEAD
-title             : "The title"
-shorttitle        : "VARIANCE OVERLAP"
-=======
 title             : "Distributions and Sampling Variance for Five Effect Size Measures of Variance Overlap"
-shorttitle        : "Distributions and Sampling Variance"
->>>>>>> cf19dca9a9b10819b414e4acdd99d132b7cc9697
-
+shorttitle        : "Effect Size"
 author: 
   - name          : "Erin M. Buchanan"
     affiliation   : "1"
     corresponding : yes    # Define only one corresponding author
-<<<<<<< HEAD
     address       : "901 S. National Ave., Springfield, MO, 65897"
     email         : "erinbuchanan@missouristate.edu"
   - name          : "John E. Scofield"
     affiliation   : "2"
   - name          : "Arielle Cunningham"
-=======
-    address       : "901 S National, Springfield, MO, 65897"
-    email         : "erinbuchanan@missouristate.edu"
-  - name          : "John E. Scofield"
-    affiliation   : "2"
-  - name          : "Ari Cunningham"
->>>>>>> cf19dca9a9b10819b414e4acdd99d132b7cc9697
     affiliation   : "1"
-
-affiliation:
+    
   - id            : "1"
     institution   : "Missouri State University"
   - id            : "2"
     institution   : "University of Missouri"
 
 author_note: |
-<<<<<<< HEAD
-  Erin M. Buchanan is an Associate Professor of Quantitative Psychology at Missouri State University. John E. Scofield is a Ph.D. candidate in Cognitive Neuroscience at the University of Missouri. Arielle Cunningham is a masters candidate in the Experimental Psychology program at Missouri State University. 
-=======
-  Erin M. Buchanan, Department of Psychology, Missouri State University; John E. Scofield, Department of Psychological Sciences, University of Missouri. Ari Cunningham, Department of Psychology, Missouri State University. All authors contributed equally to the creation of all parts of this manuscript. 
->>>>>>> cf19dca9a9b10819b414e4acdd99d132b7cc9697
+  Erin M. Buchanan is an Associate Professor of Quantitative Psychology at Missouri State University. John E. Scofield is a Ph.D. candidate in Cognitive Neuroscience at the University of Missouri. Arielle Cunningham is a masters candidate in the Experimental Psychology program at Missouri State University. All authors contributed equally to the creation of all parts of this manuscript. 
 
 abstract: |
 
