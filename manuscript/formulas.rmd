@@ -1,70 +1,173 @@
 ---
 title: "Formulas"
-output: html_document
+output:
+  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-We used the following formulas to calculate effect sizes.
+We used the following formulas to calculate effect sizes with the following notation:
+
+  - SS: Sum of squares
+  - df: Degrees of Freedom
+  - MS: Mean squared error
+  - N: Sample size
+
+Subscripts:
+
+  - A: The main independent variable of interest
+  - B: An additional independent variable 
+  - S: Subject variance for the A or B independent variable or the interaction
+  - T: Total variance 
 
 ###Full Eta Squared
 
-One-way Between: $\eta^2 = \frac{df_{A}(MS_{A}-MS_{S/A})}{SS_{T}}$
+One-way Between: 
+$$
+\eta^2 = \frac{df_{A}(MS_{A}-MS_{S/A})}{SS_{T}}
+$$
 
-Two-way Between: $\eta^2 = \frac{df_{A}(MS_{A}-MS_{S/A})}{SS_{T}}$
+Two-way Between: 
+$$
+\eta^2 = \frac{df_{A}(MS_{A}-MS_{S/A})}{SS_{T}}
+$$
 
-One-way Within: $\eta^2 = \frac{df_{A}(MS_{A}-MS_{AXS})}{SS_{T}}$
+One-way Within: 
+$$
+\eta^2 = \frac{df_{A}(MS_{A}-MS_{AXS})}{SS_{T}}
+$$
 
-Two-way Within: $\eta^2 = \frac{df_{A}(MS_{A}-MS_{AXS})}{SS_{T}}$
 
-Two-way Mixed: $\eta^2 = \frac{df_{A}(MS_{A}-MS_{AXS/B})}{SS_{T}}$
+Two-way Within: 
+$$
+\eta^2 = \frac{df_{A}(MS_{A}-MS_{AXS})}{SS_{T}}
+$$
+
+
+Two-way Mixed: 
+$$
+\eta^2 = \frac{df_{A}(MS_{A}-MS_{AXS/B})}{SS_{T}}
+$$
+
 
 
 ###Full Omega Squared
 
-One-way Between: $\omega^2 = \frac{df_{A}(MS_{A}-MS_{S/A})}{SS_{T}+MS_{S/A}}$
+One-way Between: 
+$$
+\omega^2 = \frac{df_{A}(MS_{A}-MS_{S/A})}{SS_{T}+MS_{S/A}}
+$$
 
-Two-way Between: $\omega^2 = \frac{df_{A}(MS_{A}-MS_{S/A})}{SS_{T}+MS_{S/A}}$
 
-One-way Within: $\omega^2 = \frac{df_{A}(MS_{A}-MS_{AXS})}{SS_{T}+MS_{S}}$
+Two-way Between: 
+$$
+\omega^2 = \frac{df_{A}(MS_{A}-MS_{S/A})}{SS_{T}+MS_{S/A}}
+$$
 
-Two-way Within: $\omega^2 = \frac{df_{A}(MS_{A}-MS_{AXS})}{SS_{T}+MS_{S}}$
 
-Two-way Mixed: $\omega^2 = \frac{df_{A}(MS_{A}-MS_{AXS/B})}{SS_{T}+MS_{S/B}}$
+One-way Within: 
+$$
+\omega^2 = \frac{df_{A}(MS_{A}-MS_{AXS})}{SS_{T}+MS_{S}}
+$$
+
+
+Two-way Within: 
+$$
+\omega^2 = \frac{df_{A}(MS_{A}-MS_{AXS})}{SS_{T}+MS_{S}}
+$$
+
+
+Two-way Mixed: 
+$$
+\omega^2 = \frac{df_{A}(MS_{A}-MS_{AXS/B})}{SS_{T}+MS_{S/B}}
+$$
+
 
 
 ###Partial Eta Squared
 
-One-way Between: $\eta_p^2 = \frac{SS_{A}}{SS_{A}+SS_{S/A}}$
+One-way Between: 
+$$
+\eta_p^2 = \frac{SS_{A}}{SS_{A}+SS_{S/A}}
+$$
 
-Two-way Between: $\eta_p^2 = \frac{SS_{A}}{SS_{A}+SS_{S/AB}}$
 
-One-way Within: $\eta_p^2 = \frac{SS_{A}}{SS_{A}+SS_{AXS}}$
+Two-way Between: 
+$$
+\eta_p^2 = \frac{SS_{A}}{SS_{A}+SS_{S/AB}}
+$$
 
-Two-way Within: $\eta_p^2 = \frac{SS_{A}}{SS_{A}+SS_{AXS}}$
 
-Two-way Mixed: $\eta_p^2 = \frac{SS_{A}}{SS_{A}+SS_{AXS/B}}$
+One-way Within: 
+$$
+\eta_p^2 = \frac{SS_{A}}{SS_{A}+SS_{AXS}}
+$$
+
+
+Two-way Within: 
+$$
+\eta_p^2 = \frac{SS_{A}}{SS_{A}+SS_{AXS}}
+$$
+
+
+Two-way Mixed: 
+$$
+\eta_p^2 = \frac{SS_{A}}{SS_{A}+SS_{AXS/B}}
+$$
+
 
 
 ###Partial Omega Squared
 
-Two-way Between: $\omega_p^2 = \frac{df_{A}(MS_{A}-MS_{S/A})}{SS_{A}+(N_{T}-df_{A})MS_{S/A}}$
+Two-way Between: 
+$$
+\omega_p^2 = \frac{df_{A}(MS_{A}-MS_{S/A})}{SS_{A}+(N_{T}-df_{A})MS_{S/A}}
+$$
 
-Two-way Within: $\omega_p^2 = \frac{df_{A}(MS_{A}-MS_{AXS})}{SS_{A}+SS_{AXS}+SS_{S}+MS_{S}}$
 
-Two-way Mixed: $\omega_p^2 = \frac{df_{A}(MS_{A}-MS_{AXS/B})}{SS_{A}+SS_{AXS/B}+SS_{S/B}+MS_{S/B}}$
+Two-way Within: 
+$$
+\omega_p^2 = \frac{df_{A}(MS_{A}-MS_{AXS})}{SS_{A}+SS_{AXS}+SS_{S}+MS_{S}}
+$$
+
+
+Two-way Mixed: 
+$$
+\omega_p^2 = \frac{df_{A}(MS_{A}-MS_{AXS/B})}{SS_{A}+SS_{AXS/B}+SS_{S/B}+MS_{S/B}}
+$$
+
 
 
 ###Generalized Eta Squared
 
-One-way Between: $\eta_G^2 = \frac{SS_{A}}{SS_{T}}$
+One-way Between: 
+$$
+\eta_G^2 = \frac{SS_{A}}{SS_{T}}
+$$
 
-Two-way Between: $\eta_G^2 = \frac{SS_{A}}{SS_{A}+SS_{S/AB}}$
 
-One-way Within: $\eta_G^2 = \frac{SS_{A}}{SS_{T}}$
+Two-way Between: 
+$$
+\eta_G^2 = \frac{SS_{A}}{SS_{A}+SS_{S/AB}}
+$$
 
-Two-way Within: $\eta_G^2 = \frac{SS_{A}}{SS_{A}+SS_{S}+SS_{AXS}+SS_{BXS}+SS_{AXBXS}}$
 
-Two-way Mixed: $\eta_G^2 = \frac{SS_{A}}{SS_{A}+SS_{S/B}+SS_{AXS/B}}$
+One-way Within: 
+$$
+\eta_G^2 = \frac{SS_{A}}{SS_{T}}
+$$
+
+
+Two-way Within: 
+$$
+\eta_G^2 = \frac{SS_{A}}{SS_{A}+SS_{S}+SS_{AXS}+SS_{BXS}+SS_{AXBXS}}
+$$
+
+
+Two-way Mixed: 
+$$
+\eta_G^2 = \frac{SS_{A}}{SS_{A}+SS_{S/B}+SS_{AXS/B}}
+$$
+
