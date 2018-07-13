@@ -128,14 +128,17 @@ for(a in 1:length(Esize)){
       data1k$nMetaBias[d1k] = nweightMeta$beta - popetax
     }
     
+    
     d_ata$sim_var_bias[osim] = mean(data1k$simVarBias, na.rm = T)
     d_ata$z_var_bias[osim] = mean(data1k$zVarBias, na.rm = T)
     d_ata$sim_meta_bias[osim] = mean(data1k$simVarMetaBias, na.rm = T)
     d_ata$z_meta_bias[osim] = mean(data1k$zVarMetaBias, na.rm = T)
     d_ata$n_meta_bias[osim] = mean(data1k$nMetaBias, na.rm = T)
     
+    print(b)
   }
   
+  print(a)
 }
 
 proc.time() - ptm #stop clock
