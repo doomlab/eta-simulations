@@ -1,5 +1,6 @@
 library(shiny)
 library(ggplot2)
+library(data.table) #includes fread()
 #library(reshape)
 #library(plotly)
 cleanup = theme(panel.grid.major = element_blank(), 
@@ -11,7 +12,7 @@ cleanup = theme(panel.grid.major = element_blank(),
                 text = element_text(size = 13))
 
 ####load data####
-fulldata = read.csv("fulldata.csv")
+fulldata = fread("fulldata.csv")
 fesdist = read.csv("fes_distribution.csv")
 fosdist = read.csv("fos_distribution.csv")
 gesdist = read.csv("ges_distribution.csv")
