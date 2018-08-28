@@ -13,6 +13,7 @@ cleanup = theme(panel.grid.major = element_blank(),
 
 ####load data####
 fulldata = fread("fulldata.csv")
+fulldata = as.data.frame(fulldata)
 fesdist = read.csv("fes_distribution.csv")
 fosdist = read.csv("fos_distribution.csv")
 gesdist = read.csv("ges_distribution.csv")
